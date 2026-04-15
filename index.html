@@ -1,66 +1,56 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <title>병원 시약 재고 ERP</title>
+<meta charset="UTF-8">
+<title>병원 시약 ERP</title>
 
-  <style>
-    body {
-      font-family: Arial;
-      margin: 0;
-      background: #eef2f7;
-    }
+<style>
+body{margin:0;font-family:Arial;background:#eef2f7;}
+header{background:#2c3e50;color:#fff;padding:20px;text-align:center;}
 
-    header {
-      background: #2c3e50;
-      color: white;
-      padding: 20px;
-      text-align: center;
-      font-size: 20px;
-    }
+.container{display:flex;gap:20px;padding:10px;}
+.left{width:65%;}
+.right{width:35%;}
 
-    .box {
-      background: white;
-      margin: 15px;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
+.box{
+  background:#fff;
+  margin:15px 0;
+  padding:15px;
+  border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
 
-    input, select {
-      padding: 10px;
-      margin: 5px;
-      font-size: 14px;
-    }
+input,select{
+  padding:8px;
+  margin:5px;
+}
 
-    button {
-      padding: 10px 15px;
-      border: none;
-      background: #3498db;
-      color: white;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+button{
+  padding:8px 12px;
+  background:#3498db;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  margin:3px;
+}
 
-    ul {
-      list-style: none;
-      padding: 0;
-    }
+ul{list-style:none;padding:0;}
+li{padding:5px;border-bottom:1px solid #eee;}
 
-    li {
-      padding: 5px;
-      border-bottom: 1px solid #eee;
-    }
-  </style>
+.alert{
+  background:#ffe5e5;
+  border-left:5px solid red;
+  padding:5px;
+}
+</style>
 </head>
 
 <body>
 
-<header>
-  🧪 병원 시약 재고 관리 ERP
-</header>
+<header>🏥 병원 시약 ERP</header>
 
-<!-- 🔐 로그인 -->
+<!-- LOGIN -->
 <div class="box" id="loginBox">
   <h3>로그인</h3>
   <input id="id" placeholder="아이디">
@@ -68,191 +58,299 @@
   <button onclick="login()">로그인</button>
 </div>
 
-<!-- 앱 -->
+<!-- APP -->
 <div id="app" style="display:none;">
+<button onclick="logout()">로그아웃</button>
 
-  <button onclick="logout()">로그아웃</button>
+<div class="container">
 
-  <!-- 📦 재고 -->
-  <div class="box">
-    <h3>📦 재고 등록</h3>
+  <!-- LEFT -->
+  <div class="left">
 
-    <select id="hospital">
-      <option value="경주동국대병원">경주동국대병원</option>
-      <option value="구미차병원">구미차병원</option>
-    </select>
+    <div class="box">
+      <h3>📦 재고 등록</h3>
+      <select id="hospital"></select>
+      <input id="name" placeholder="시약명">
+      <input id="qty" placeholder="수량">
 
-    <input id="name" placeholder="시약명">
-    <input id="qty" placeholder="수량">
-    <input id="exp" placeholder="유효기간 YYYY-MM-DD">
-    <button onclick="addItem()">등록</button>
+      <!-- ✅ 변경: 날짜 형식 강제 -->
+      <input id="exp" type="date">
+
+      <button onclick="addItem()">등록</button>
+    </div>
+
+    <div class="box">
+      <h3>📋 재고 목록</h3>
+      <ul id="list"></ul>
+    </div>
+
+    <div class="box">
+      <h3>🚚 출고 등록</h3>
+      <select id="outHospital"></select>
+      <input id="client" placeholder="거래처">
+      <input id="item" placeholder="시약명">
+      <input id="outQty" placeholder="수량">
+      <button onclick="addOut()">출고</button>
+    </div>
+
+    <div class="box">
+      <h3>📦 출고 목록</h3>
+      <ul id="outListEl"></ul>
+    </div>
+
+    <div class="box">
+      <h3>📊 월별 조회</h3>
+      <button onclick="renderMonthly()">조회</button>
+      <ul id="monthly"></ul>
+    </div>
+
+    <div class="box">
+      <h3>🚨 발주 목록</h3>
+      <ul id="lowStock"></ul>
+    </div>
+
   </div>
 
-  <!-- 재고 리스트 -->
-  <div class="box">
-    <h3>📋 재고 목록</h3>
-    <ul id="list"></ul>
+  <!-- RIGHT -->
+  <div class="right">
+
+    <div class="box">
+      <h3>📌 미납 관리</h3>
+
+      <h4>➕ 수동 등록</h4>
+
+      <select id="b_hospital"></select>
+      <input id="b_name" placeholder="시약명">
+      <input id="b_qty" placeholder="수량">
+
+      <!-- ✅ 변경: 날짜 형식 강제 -->
+      <input id="b_exp" type="date">
+
+      <input id="b_reason" placeholder="사유">
+      <button onclick="addBacklog()">등록</button>
+
+      <hr>
+
+      <button onclick="exportCSV()">엑셀</button>
+      <button onclick="clearBacklog()">전체삭제</button>
+
+      <hr>
+
+      <select id="filterHospital" onchange="renderBacklog()"></select>
+      <select id="filterMonth" onchange="renderBacklog()">
+        <option value="all">전체월</option>
+        <option value="1">1월</option>
+        <option value="2">2월</option>
+        <option value="3">3월</option>
+        <option value="4">4월</option>
+        <option value="5">5월</option>
+        <option value="6">6월</option>
+        <option value="7">7월</option>
+        <option value="8">8월</option>
+        <option value="9">9월</option>
+        <option value="10">10월</option>
+        <option value="11">11월</option>
+        <option value="12">12월</option>
+      </select>
+
+      <hr>
+
+      <div id="backlogList"></div>
+    </div>
+
   </div>
 
-  <!-- 🚚 출고 -->
-  <div class="box">
-    <h3>🚚 출고 등록</h3>
-
-    <select id="outHospital">
-      <option value="경주동국대병원">경주동국대병원</option>
-      <option value="구미차병원">구미차병원</option>
-    </select>
-
-    <input id="client" placeholder="거래처">
-    <input id="item" placeholder="시약명">
-    <input id="outQty" placeholder="수량">
-    <button onclick="addOut()">출고</button>
-  </div>
-
-  <!-- 출고 리스트 -->
-  <div class="box">
-    <h3>📦 출고 내역</h3>
-    <ul id="outList"></ul>
-  </div>
-
-  <!-- 🚨 발주 리스트 -->
-  <div class="box">
-    <h3>📦 발주 필요 목록</h3>
-    <ul id="lowStock"></ul>
-  </div>
-
+</div>
 </div>
 
 <script>
 
-  // 🔐 로그인
-  function login() {
-    const id = document.getElementById('id').value;
-    const pw = document.getElementById('pw').value;
+/* ================= DATA ================= */
+let items=[];
+let outList=[];
+let backlog=[];
 
-    if (id === "admin" && pw === "1234") {
-      localStorage.setItem("login", "true");
-      showApp();
-    } else {
-      alert("로그인 실패");
-    }
-  }
+/* ================= LOGIN ================= */
+function login(){
+  if(id.value==="admin" && pw.value==="1234"){
+    localStorage.setItem("login","1");
+    show();
+  }else alert("실패");
+}
 
-  function logout() {
-    localStorage.removeItem("login");
-    location.reload();
-  }
+function logout(){
+  localStorage.removeItem("login");
+  location.reload();
+}
 
-  function showApp() {
-    document.getElementById('loginBox').style.display = "none";
-    document.getElementById('app').style.display = "block";
-  }
+function show(){
+  loginBox.style.display="none";
+  app.style.display="block";
+}
 
-  window.onload = function() {
-    if (localStorage.getItem("login") === "true") {
-      showApp();
-    }
-  };
+/* ================= INIT ================= */
+window.onload=()=>{
+  if(localStorage.getItem("login")==="1") show();
 
-  // 📦 재고
-  let items = [];
-  let lowStockList = [];
+  const h=["경주동국대병원","구미차병원"];
 
-  function addItem() {
-    const hospital = document.getElementById('hospital').value;
-    const name = document.getElementById('name').value;
-    const qty = Number(document.getElementById('qty').value);
-    const exp = document.getElementById('exp').value;
+  h.forEach(v=>{
+    hospital.innerHTML+=`<option>${v}</option>`;
+    outHospital.innerHTML+=`<option>${v}</option>`;
+    b_hospital.innerHTML+=`<option>${v}</option>`;
+    filterHospital.innerHTML+=`<option>${v}</option>`;
+  });
+};
 
-    items.push({ hospital, name, qty, exp });
-    render();
-  }
+/* ================= 재고 ================= */
+function addItem(){
+  items.push({
+    hospital:hospital.value,
+    name:name.value,
+    qty:+qty.value,
+    exp:exp.value
+  });
+  render();
+}
 
-  function render() {
-    const list = document.getElementById('list');
-    list.innerHTML = '';
+/* ================= 렌더 ================= */
+function render(){
 
-    const today = new Date();
-    lowStockList = [];
+  list.innerHTML="";
+  lowStock.innerHTML="";
 
-    items.forEach(i => {
-      const expDate = new Date(i.exp);
-      const diff = (expDate - today) / (1000*60*60*24);
+  let today=new Date();
 
-      let expStatus = "";
-      if (diff < 0) expStatus = "❌ 만료";
-      else if (diff < 7) expStatus = "🔥 긴급";
-      else if (diff < 30) expStatus = "⚠️ 임박";
-      else expStatus = "✅ 정상";
+  items.forEach(i=>{
 
-      let stockStatus = "";
+    let diff=(new Date(i.exp)-today)/86400000;
 
-      if (i.qty <= 5) {
-        stockStatus = "🔥 재고위험";
-        lowStockList.push(i);
-        alert(`🚨 [${i.hospital}] ${i.name} 재고 부족 (${i.qty})`);
-      }
-      else if (i.qty <= 10) {
-        stockStatus = "🚨 부족";
-        lowStockList.push(i);
-      }
-      else {
-        stockStatus = "✅ 정상";
-      }
+    let status=
+      diff<0?"❌만료":
+      diff<7?"🔥긴급":"✅";
 
-      list.innerHTML += `
-        <li>[${i.hospital}] ${i.name} | ${i.qty} | ${i.exp} | ${expStatus} | ${stockStatus}</li>
-      `;
-    });
+    if(i.qty<=10) lowStock.innerHTML+=`<li>${i.name} (${i.qty})</li>`;
 
-    renderLowStock();
-  }
-
-  function renderLowStock() {
-    const el = document.getElementById('lowStock');
-    el.innerHTML = '';
-
-    const grouped = {
-      "경주동국대병원": [],
-      "구미차병원": []
-    };
-
-    lowStockList.forEach(i => {
-      grouped[i.hospital].push(i);
-    });
-
-    for (let h in grouped) {
-      el.innerHTML += `<h4>🏥 ${h}</h4>`;
-
-      grouped[h].forEach(i => {
-        el.innerHTML += `<li>📦 ${i.name} | ${i.qty}개 (발주 필요)</li>`;
+    if(i.qty<=5){
+      backlog.push({
+        hospital:i.hospital,
+        name:i.name,
+        qty:i.qty,
+        exp:i.exp,
+        reason:"자동보류",
+        date:new Date()
       });
     }
-  }
 
-  // 🚚 출고
-  let outList = [];
+    list.innerHTML+=`<li>${i.hospital} | ${i.name} | ${i.qty} | ${status}</li>`;
+  });
 
-  function addOut() {
-    const hospital = document.getElementById('outHospital').value;
-    const client = document.getElementById('client').value;
-    const item = document.getElementById('item').value;
-    const qty = document.getElementById('outQty').value;
+  renderBacklog();
+}
 
-    outList.push({ hospital, client, item, qty });
-    renderOut();
-  }
+/* ================= 출고 ================= */
+function addOut(){
+  outList.push({
+    hospital:outHospital.value,
+    client:client.value,
+    item:item.value,
+    qty:+outQty.value,
+    date:new Date()
+  });
 
-  function renderOut() {
-    const list = document.getElementById('outList');
-    list.innerHTML = '';
+  renderOut();
+}
 
-    outList.forEach(o => {
-      list.innerHTML += `
-        <li>[${o.hospital}] ${o.client} | ${o.item} | ${o.qty}</li>
+function renderOut(){
+  outListEl.innerHTML="";
+  outList.forEach(o=>{
+    outListEl.innerHTML+=`<li>${o.hospital} | ${o.item} | ${o.qty}</li>`;
+  });
+}
+
+/* ================= 미납 ================= */
+function addBacklog(){
+
+  backlog.push({
+    hospital:b_hospital.value,
+    name:b_name.value,
+    qty:+b_qty.value,
+    exp:b_exp.value,
+    reason:b_reason.value,
+    date:new Date()
+  });
+
+  renderBacklog();
+}
+
+/* ================= 렌더 미납 ================= */
+function renderBacklog(){
+
+  backlogList.innerHTML="";
+
+  let fh=filterHospital.value;
+  let fm=filterMonth.value;
+
+  let group={};
+
+  backlog.forEach(i=>{
+
+    if(fh!="all" && i.hospital!=fh) return;
+
+    let m=new Date(i.date).getMonth()+1;
+    if(fm!="all" && fm!=m) return;
+
+    let key=i.hospital+"_"+m;
+
+    if(!group[key]) group[key]=[];
+    group[key].push(i);
+  });
+
+  for(let k in group){
+
+    backlogList.innerHTML+=`<h4>${k}</h4>`;
+
+    group[k].forEach((i,idx)=>{
+
+      backlogList.innerHTML+=`
+        <div class="alert">
+          ${i.name} | ${i.qty} | ${i.reason}
+          <button onclick="deleteBacklog(${backlog.indexOf(i)})">삭제</button>
+        </div>
       `;
     });
   }
+}
+
+/* ================= 삭제 (부분삭제 추가) ================= */
+function deleteBacklog(index){
+  backlog.splice(index,1);
+  renderBacklog();
+}
+
+/* ================= CSV ================= */
+function exportCSV(){
+
+  let csv="병원,시약,수량,사유\n";
+
+  backlog.forEach(i=>{
+    csv+=`${i.hospital},${i.name},${i.qty},${i.reason}\n`;
+  });
+
+  let blob=new Blob([csv],{type:"text/csv"});
+  let url=URL.createObjectURL(blob);
+
+  let a=document.createElement("a");
+  a.href=url;
+  a.download="backlog.csv";
+  a.click();
+}
+
+/* ================= CLEAR ================= */
+function clearBacklog(){
+  backlog=[];
+  renderBacklog();
+}
 
 </script>
 
