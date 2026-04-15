@@ -2,53 +2,108 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>병원 시약 ERP</title>
+<title>SUNGSIM ERP</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#eef2f7;}
-header{background:#2c3e50;color:#fff;padding:20px;text-align:center;}
 
-.container{display:flex;gap:20px;padding:10px;}
+/* ===== 기본 ===== */
+body{
+  margin:0;
+  font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
+  background:#f7f8fa;
+  color:#111;
+}
+
+/* ===== 상단 ===== */
+header.topbar{
+  background:#fff;
+  padding:22px;
+  text-align:center;
+  font-size:34px;
+  font-weight:800;
+  letter-spacing:6px;
+  border-bottom:1px solid #eaeaea;
+}
+
+/* ===== 레이아웃 ===== */
+.container{
+  display:flex;
+  gap:20px;
+  padding:20px;
+}
+
 .left{width:65%;}
 .right{width:35%;}
 
+/* ===== 박스 ===== */
 .box{
   background:#fff;
   margin:15px 0;
   padding:15px;
-  border-radius:10px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  border-radius:12px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.04);
 }
 
+/* ===== 입력 ===== */
 input,select{
   padding:8px;
   margin:5px;
+  border:1px solid #ddd;
+  border-radius:6px;
+  outline:none;
 }
 
+input:focus{
+  border-color:#111;
+}
+
+/* ===== 버튼 ===== */
 button{
   padding:8px 12px;
-  background:#3498db;
+  background:#111;
   color:#fff;
   border:none;
-  border-radius:6px;
+  border-radius:8px;
   cursor:pointer;
   margin:3px;
+  transition:0.2s;
 }
 
+button:hover{
+  background:#333;
+}
+
+/* ===== 리스트 ===== */
 ul{list-style:none;padding:0;}
-li{padding:5px;border-bottom:1px solid #eee;}
+li{padding:6px;border-bottom:1px solid #eee;}
 
+/* ===== 알림 ===== */
 .alert{
-  background:#ffe5e5;
-  border-left:5px solid red;
-  padding:5px;
+  background:#fff5f5;
+  border-left:4px solid #ff4d4f;
+  padding:8px;
+  border-radius:6px;
+  margin:6px 0;
 }
+
+/* ===== 로그인 ===== */
+#loginBox{
+  width:300px;
+  margin:100px auto;
+  padding:20px;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.05);
+  text-align:center;
+}
+
 </style>
 </head>
 
 <body>
 
-<header>🏥 병원 시약 ERP</header>
+<!-- ===== HEADER ===== -->
+<header class="topbar">SUNGSIM</header>
 
 <!-- LOGIN -->
 <div class="box" id="loginBox">
@@ -72,10 +127,7 @@ li{padding:5px;border-bottom:1px solid #eee;}
       <select id="hospital"></select>
       <input id="name" placeholder="시약명">
       <input id="qty" placeholder="수량">
-
-      <!-- ✅ 변경: 날짜 형식 강제 -->
       <input id="exp" type="date">
-
       <button onclick="addItem()">등록</button>
     </div>
 
@@ -122,10 +174,7 @@ li{padding:5px;border-bottom:1px solid #eee;}
       <select id="b_hospital"></select>
       <input id="b_name" placeholder="시약명">
       <input id="b_qty" placeholder="수량">
-
-      <!-- ✅ 변경: 날짜 형식 강제 -->
       <input id="b_exp" type="date">
-
       <input id="b_reason" placeholder="사유">
       <button onclick="addBacklog()">등록</button>
 
@@ -139,18 +188,12 @@ li{padding:5px;border-bottom:1px solid #eee;}
       <select id="filterHospital" onchange="renderBacklog()"></select>
       <select id="filterMonth" onchange="renderBacklog()">
         <option value="all">전체월</option>
-        <option value="1">1월</option>
-        <option value="2">2월</option>
-        <option value="3">3월</option>
-        <option value="4">4월</option>
-        <option value="5">5월</option>
-        <option value="6">6월</option>
-        <option value="7">7월</option>
-        <option value="8">8월</option>
-        <option value="9">9월</option>
-        <option value="10">10월</option>
-        <option value="11">11월</option>
-        <option value="12">12월</option>
+        <option value="1">1월</option><option value="2">2월</option>
+        <option value="3">3월</option><option value="4">4월</option>
+        <option value="5">5월</option><option value="6">6월</option>
+        <option value="7">7월</option><option value="8">8월</option>
+        <option value="9">9월</option><option value="10">10월</option>
+        <option value="11">11월</option><option value="12">12월</option>
       </select>
 
       <hr>
@@ -270,7 +313,6 @@ function renderOut(){
 
 /* ================= 미납 ================= */
 function addBacklog(){
-
   backlog.push({
     hospital:b_hospital.value,
     name:b_name.value,
@@ -279,7 +321,6 @@ function addBacklog(){
     reason:b_reason.value,
     date:new Date()
   });
-
   renderBacklog();
 }
 
@@ -310,7 +351,7 @@ function renderBacklog(){
 
     backlogList.innerHTML+=`<h4>${k}</h4>`;
 
-    group[k].forEach((i,idx)=>{
+    group[k].forEach((i)=>{
 
       backlogList.innerHTML+=`
         <div class="alert">
@@ -322,7 +363,7 @@ function renderBacklog(){
   }
 }
 
-/* ================= 삭제 (부분삭제 추가) ================= */
+/* ================= 삭제 ================= */
 function deleteBacklog(index){
   backlog.splice(index,1);
   renderBacklog();
