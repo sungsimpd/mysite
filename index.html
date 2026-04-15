@@ -1,14 +1,73 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-  <title>내 사이트</title>
+  <meta charset="UTF-8">
+  <title>내 회사 홈페이지</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      margin: 0;
+      background: #f4f6f8;
+    }
+
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      padding: 40px;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      margin: 20px auto;
+      width: 300px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      background: #3498db;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #2980b9;
+    }
+  </style>
 </head>
+
 <body>
 
-  <h1>소몽왕국</h1>
-  <p>여기는 우리 코부와 소몽이의 공간입니다.</p>
+<header>
+  <h1>우리 회사 홈페이지</h1>
+</header>
 
-  <button onclick="alert('클릭됨!')">눌러봐</button>
+<div class="container">
+
+  <div class="card">
+    <h2>소개</h2>
+    <p>우리는 최고의 서비스를 제공합니다.</p>
+  </div>
+
+  <div class="card">
+    <h2>서비스</h2>
+    <p>웹 개발 / 디자인 / 시스템 구축</p>
+  </div>
+
+  <button onclick="alert('문의 감사합니다!')">문의하기</button>
+
+</div>
 
 </body>
 </html>
