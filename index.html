@@ -123,6 +123,13 @@ li{padding:6px;border-bottom:1px solid #eee;}
   <div class="left">
 
     <div class="box">
+      <div class="box">
+  <h3>📥 대량 재고 등록</h3>
+
+  <textarea id="bulkInput" rows="10" style="width:100%;"></textarea>
+
+  <button onclick="bulkAdd()">일괄등록</button>
+</div>
       <h3>📦 재고 등록</h3>
       <select id="hospital"></select>
       <input id="name" placeholder="시약명">
@@ -393,6 +400,24 @@ function clearBacklog(){
   renderBacklog();
 }
 
+function bulkAdd(){
+
+  let lines = bulkInput.value.split("\n");
+
+  lines.forEach(name => {
+    if(name.trim() === "") return;
+
+    items.push({
+      hospital: hospital.value,
+      name: name.trim(),
+      qty: 0,
+      exp: ""
+    });
+  });
+
+  render();
+  alert("대량 등록 완료");
+}
 </script>
 
 </body>
