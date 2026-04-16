@@ -2,15 +2,17 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SUNGSIM ERP</title>
+<title>SUNGSIM</title>
 
 <style>
+
 body{
   margin:0;
   font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
   background:#f7f8fa;
 }
 
+/* HEADER */
 header{
   background:#fff;
   padding:22px;
@@ -20,6 +22,7 @@ header{
   border-bottom:1px solid #eaeaea;
 }
 
+/* LAYOUT */
 .container{display:flex;gap:20px;padding:20px;}
 .left{width:65%;}
 .right{width:35%;}
@@ -32,13 +35,15 @@ header{
   box-shadow:0 2px 8px rgba(0,0,0,0.05);
 }
 
-input,select{
+/* INPUT */
+input,select,textarea{
   padding:8px;
   margin:5px;
   border:1px solid #ddd;
   border-radius:6px;
 }
 
+/* BUTTON */
 button{
   padding:8px 12px;
   border:none;
@@ -49,9 +54,20 @@ button{
   margin:3px;
 }
 
-ul{list-style:none;padding:0;}
-li{padding:6px;border-bottom:1px solid #eee;}
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+}
 
+th,td{
+  border-bottom:1px solid #eee;
+  padding:8px;
+  text-align:left;
+}
+
+/* ALERT */
 .alert{
   background:#fff5f5;
   border-left:4px solid red;
@@ -59,7 +75,7 @@ li{padding:6px;border-bottom:1px solid #eee;}
   margin:5px 0;
 }
 
-/* 로그아웃 고정 */
+/* LOGOUT */
 #logoutBtn{
   position:fixed;
   bottom:20px;
@@ -68,12 +84,13 @@ li{padding:6px;border-bottom:1px solid #eee;}
   padding:10px 14px;
   border-radius:10px;
 }
+
 </style>
 </head>
 
 <body>
 
-<header>SUNGSIM ERP</header>
+<header>SUNGSIM</header>
 
 <button id="logoutBtn" onclick="logout()">로그아웃</button>
 
@@ -95,15 +112,18 @@ li{padding:6px;border-bottom:1px solid #eee;}
   <input id="name" placeholder="시약명">
   <input id="qty" placeholder="수량">
   <input id="exp" type="date">
+  <input id="lot" placeholder="LOT">
   <button onclick="addItem()">등록</button>
 </div>
 
 <div class="box">
-  <h3>📥 대량 등록</h3>
+  <h3>📥 대량 등록 (엑셀형)</h3>
 
-  <p style="font-size:12px;color:#666;">
-    형식: 시약명 | 수량 | 유효기간 | LOT
-  </p>
+  <table>
+    <tr>
+      <th>시약명 | 수량 | 유효기간 | LOT</th>
+    </tr>
+  </table>
 
   <textarea id="bulkInput" rows="6" style="width:100%"></textarea>
 
@@ -112,12 +132,18 @@ li{padding:6px;border-bottom:1px solid #eee;}
 
 <div class="box">
   <h3>📋 재고 목록</h3>
-  <ul id="list"></ul>
-</div>
-
-<div class="box">
-  <h3>🚨 발주</h3>
-  <ul id="lowStock"></ul>
+  <table>
+    <thead>
+      <tr>
+        <th>병원</th>
+        <th>시약</th>
+        <th>수량</th>
+        <th>유효기간</th>
+        <th>LOT</th>
+      </tr>
+    </thead>
+    <tbody id="list"></tbody>
+  </table>
 </div>
 
 </div>
@@ -155,27 +181,17 @@ li{padding:6px;border-bottom:1px solid #eee;}
   <div id="backlogList"></div>
 </div>
 
-<div class="box">
-  <h3>📅 월별 발주 검색</h3>
-
-  <select id="searchYear"></select>
-  <select id="searchMonth"></select>
-  <button onclick="searchMonth()">조회</button>
-
-  <ul id="monthResult"></ul>
-</div>
-
 </div>
 </div>
 
 <script>
 
-/* ===== DATA ===== */
+/* ================= DATA ================= */
 let items=[];
 let backlog=[];
 let selectedClient=null;
 
-/* ===== INIT ===== */
+/* ================= INIT ================= */
 window.onload=()=>{
 
   const h=["경주동국대병원","구미차병원"];
@@ -187,16 +203,10 @@ window.onload=()=>{
     viewHospital.innerHTML+=`<option value="${v}">${v}</option>`;
   });
 
-  let now=new Date().getFullYear();
-
-  for(let i=now;i>=now-5;i--)
-    searchYear.innerHTML+=`<option>${i}</option>`;
-
-  for(let i=1;i<=12;i++)
-    searchMonth.innerHTML+=`<option>${i}</option>`;
+  renderClientButtons();
 };
 
-/* ===== ADD ===== */
+/* ================= ADD ================= */
 function addItem(){
 
   if(!name.value||!qty.value||!exp.value){
@@ -208,54 +218,46 @@ function addItem(){
     hospital:hospital.value,
     name:name.value,
     qty:+qty.value,
-    exp:exp.value
+    exp:exp.value,
+    lot:lot.value
   });
 
   render();
 }
 
-/* ===== BULK ===== */
+/* ================= BULK (FIXED) ================= */
 function bulkAdd(){
 
   bulkInput.value.split("\n").forEach(line=>{
 
     if(!line.trim()) return;
 
-    let parts = line.split("|");
-
-    let name = parts[0]?.trim();
-    let qty = parts[1]?.trim();
-    let exp = parts[2]?.trim();
-    let lot = parts[3]?.trim();
-
-    if(!name) return;
+    let p=line.split("|");
 
     items.push({
       hospital:hospital.value,
-      name:name,
-      qty: qty ? Number(qty) : 0,
-      exp: exp || "",
-      lot: lot || ""
+      name:(p[0]||"").trim(),
+      qty:Number((p[1]||0).trim()),
+      exp:(p[2]||"").trim(),
+      lot:(p[3]||"").trim()
     });
+
   });
 
   render();
 }
-}
 
-/* ===== RENDER (핵심 안정화) ===== */
+/* ================= RENDER ================= */
 function render(){
 
   list.innerHTML="";
-  lowStock.innerHTML="";
-  clientButtons.innerHTML="";
 
   let selected=viewHospital.value;
 
   let filtered=items.filter(i=>{
-    let hospitalOk = selected==="all"||i.hospital===selected;
-    let clientOk = !selectedClient || i.hospital===selectedClient;
-    return hospitalOk && clientOk;
+    let hOk = selected==="all"||i.hospital===selected;
+    let cOk = !selectedClient || i.hospital===selectedClient;
+    return hOk && cOk;
   });
 
   filtered.forEach(i=>{
@@ -263,31 +265,38 @@ function render(){
     let diff=(new Date(i.exp)-new Date())/86400000;
     let status=diff<0?"❌":diff<7?"🔥":"✅";
 
-    if(i.qty<=10)
-      lowStock.innerHTML+=`<li>${i.name} (${i.qty})</li>`;
-
- list.innerHTML+=
-`<li>
-  ${i.hospital} | ${i.name} | ${i.qty} | ${status} | LOT:${i.lot || "-"}
-</li>`;
-
-  /* 거래처 버튼 생성 */
-  [...new Set(items.map(i=>i.hospital))].forEach(c=>{
-    clientButtons.innerHTML+=
-    `<button onclick="toggleClient('${c}')">${c}</button>`;
+    list.innerHTML+=`
+      <tr>
+        <td>${i.hospital}</td>
+        <td>${i.name}</td>
+        <td>${i.qty}</td>
+        <td>${i.exp}</td>
+        <td>${i.lot||"-"}</td>
+      </tr>
+    `;
   });
 
   renderBacklog();
 }
 
-/* ===== 거래처 토글 ===== */
+/* ================= CLIENT BUTTON (FIXED) ================= */
+function renderClientButtons(){
+
+  clientButtons.innerHTML="";
+
+  [...new Set(items.map(i=>i.hospital))].forEach(c=>{
+    clientButtons.innerHTML+=
+    `<button onclick="toggleClient('${c}')">${c}</button>`;
+  });
+}
+
 function toggleClient(c){
 
   selectedClient = (selectedClient===c)?null:c;
   render();
 }
 
-/* ===== BACKLOG ===== */
+/* ================= BACKLOG ================= */
 function addBacklog(){
 
   backlog.push({
@@ -334,25 +343,7 @@ function renderBacklog(){
   }
 }
 
-/* ===== MONTH SEARCH (FIXED) ===== */
-function searchMonth(){
-
-  monthResult.innerHTML="";
-
-  let y=Number(searchYear.value);
-  let m=Number(searchMonth.value);
-
-  backlog.forEach(i=>{
-    let d=new Date(i.date);
-
-    if(d.getFullYear()===y && (d.getMonth()+1)===m){
-      monthResult.innerHTML+=
-      `<li>${i.hospital} | ${i.name} | ${i.qty} | ${i.reason}</li>`;
-    }
-  });
-}
-
-/* ===== LOGOUT ===== */
+/* ================= LOGOUT ================= */
 function logout(){
   location.reload();
 }
