@@ -46,6 +46,7 @@ button{
   color:#fff;
   border-radius:8px;
   cursor:pointer;
+  margin:3px;
 }
 
 ul{list-style:none;padding:0;}
@@ -58,12 +59,23 @@ li{padding:6px;border-bottom:1px solid #eee;}
   margin:5px 0;
 }
 
+/* 로그아웃 고정 */
+#logoutBtn{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:#111;
+  padding:10px 14px;
+  border-radius:10px;
+}
 </style>
 </head>
 
 <body>
 
 <header>SUNGSIM ERP</header>
+
+<button id="logoutBtn" onclick="logout()">로그아웃</button>
 
 <div class="container">
 
@@ -108,6 +120,11 @@ li{padding:6px;border-bottom:1px solid #eee;}
 <div class="right">
 
 <div class="box">
+  <h3>🏢 거래처 필터</h3>
+  <div id="clientButtons"></div>
+</div>
+
+<div class="box">
   <h3>📌 미납</h3>
 
   <select id="b_hospital"></select>
@@ -133,7 +150,7 @@ li{padding:6px;border-bottom:1px solid #eee;}
 </div>
 
 <div class="box">
-  <h3>📅 월별 검색</h3>
+  <h3>📅 월별 발주 검색</h3>
 
   <select id="searchYear"></select>
   <select id="searchMonth"></select>
@@ -147,11 +164,12 @@ li{padding:6px;border-bottom:1px solid #eee;}
 
 <script>
 
-/* ================= DATA ================= */
+/* ===== DATA ===== */
 let items=[];
 let backlog=[];
+let selectedClient=null;
 
-/* ================= INIT ================= */
+/* ===== INIT ===== */
 window.onload=()=>{
 
   const h=["경주동국대병원","구미차병원"];
@@ -172,7 +190,7 @@ window.onload=()=>{
     searchMonth.innerHTML+=`<option>${i}</option>`;
 };
 
-/* ================= ADD ================= */
+/* ===== ADD ===== */
 function addItem(){
 
   if(!name.value||!qty.value||!exp.value){
@@ -190,7 +208,7 @@ function addItem(){
   render();
 }
 
-/* ================= BULK ================= */
+/* ===== BULK ===== */
 function bulkAdd(){
 
   bulkInput.value.split("\n").forEach(n=>{
@@ -207,16 +225,19 @@ function bulkAdd(){
   render();
 }
 
-/* ================= RENDER (핵심 통합) ================= */
+/* ===== RENDER (핵심 안정화) ===== */
 function render(){
 
   list.innerHTML="";
   lowStock.innerHTML="";
+  clientButtons.innerHTML="";
 
   let selected=viewHospital.value;
 
   let filtered=items.filter(i=>{
-    return selected==="all"||i.hospital===selected;
+    let hospitalOk = selected==="all"||i.hospital===selected;
+    let clientOk = !selectedClient || i.hospital===selectedClient;
+    return hospitalOk && clientOk;
   });
 
   filtered.forEach(i=>{
@@ -231,10 +252,23 @@ function render(){
     `<li>${i.hospital} | ${i.name} | ${i.qty} | ${status}</li>`;
   });
 
+  /* 거래처 버튼 생성 */
+  [...new Set(items.map(i=>i.hospital))].forEach(c=>{
+    clientButtons.innerHTML+=
+    `<button onclick="toggleClient('${c}')">${c}</button>`;
+  });
+
   renderBacklog();
 }
 
-/* ================= BACKLOG ================= */
+/* ===== 거래처 토글 ===== */
+function toggleClient(c){
+
+  selectedClient = (selectedClient===c)?null:c;
+  render();
+}
+
+/* ===== BACKLOG ===== */
 function addBacklog(){
 
   backlog.push({
@@ -281,22 +315,27 @@ function renderBacklog(){
   }
 }
 
-/* ================= MONTH SEARCH ================= */
+/* ===== MONTH SEARCH (FIXED) ===== */
 function searchMonth(){
 
   monthResult.innerHTML="";
 
+  let y=Number(searchYear.value);
+  let m=Number(searchMonth.value);
+
   backlog.forEach(i=>{
     let d=new Date(i.date);
 
-    if(
-      d.getFullYear()==searchYear.value &&
-      d.getMonth()+1==searchMonth.value
-    ){
+    if(d.getFullYear()===y && (d.getMonth()+1)===m){
       monthResult.innerHTML+=
-      `<li>${i.hospital} | ${i.name} | ${i.qty}</li>`;
+      `<li>${i.hospital} | ${i.name} | ${i.qty} | ${i.reason}</li>`;
     }
   });
+}
+
+/* ===== LOGOUT ===== */
+function logout(){
+  location.reload();
 }
 
 </script>
