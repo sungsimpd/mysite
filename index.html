@@ -48,7 +48,6 @@ button{
   border-radius:8px;
   cursor:pointer;
 }
-
 button:hover{background:#256642;}
 
 table{
@@ -62,25 +61,18 @@ th,td{
   text-align:left;
 }
 
-.card{
-  background:#f6fbf8;
-  border:1px solid #d9eee1;
-  padding:10px;
-  border-radius:10px;
-  text-align:center;
-}
-
 .dashboard{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:10px;
 }
 
-.alert{
-  background:#fff5f5;
-  border-left:4px solid red;
-  padding:8px;
-  margin:5px 0;
+.card{
+  background:#f6fbf8;
+  border:1px solid #d9eee1;
+  padding:10px;
+  border-radius:10px;
+  text-align:center;
 }
 
 #logoutBtn{
@@ -130,12 +122,12 @@ th,td{
 </div>
 
 <div class="box">
-  <h3>📊 병원 대시보드</h3>
+  <h3>📊 병원별 대시보드</h3>
   <div id="dashboard" class="dashboard"></div>
 </div>
 
 <div class="box">
-  <h3>📋 재고</h3>
+  <h3>📋 재고 목록</h3>
   <table>
     <thead>
       <tr>
@@ -152,19 +144,18 @@ th,td{
 </div>
 
 </div>
-
 </div>
 
 <script>
 
 /* ===== DATA ===== */
-let items=[];
+let items = [];
 
 /* ===== LOAD ===== */
-window.onload=()=>{
+window.onload = () => {
   loadData();
 
-  hospital.innerHTML=`
+  hospital.innerHTML = `
     <option>구미차병원</option>
     <option>경주동국대병원</option>
   `;
@@ -174,32 +165,35 @@ window.onload=()=>{
 
 /* ===== SAVE ===== */
 function saveData(){
-  localStorage.setItem("sungsim",JSON.stringify(items));
+  localStorage.setItem("sungsim", JSON.stringify(items));
 }
 
 function loadData(){
-  items = JSON.parse(localStorage.getItem("sungsim")||"[]");
+  items = JSON.parse(localStorage.getItem("sungsim") || "[]");
 }
 
-/* ===== MERGE ===== */
+/* ===== MERGE (중복 합산 핵심) ===== */
 function mergeItem(n){
 
   let f = items.find(i =>
-    i.hospital===n.hospital &&
-    i.name===n.name &&
-    i.lot===n.lot &&
-    i.exp===n.exp
+    i.hospital === n.hospital &&
+    i.name === n.name &&
+    i.lot === n.lot &&
+    i.exp === n.exp
   );
 
-  if(f) f.qty += Number(n.qty);
-  else items.push(n);
+  if(f){
+    f.qty += Number(n.qty);
+  }else{
+    items.push(n);
+  }
 }
 
 /* ===== ADD ===== */
 function addItem(){
 
   if(!name.value || !qty.value){
-    alert("필수");
+    alert("필수 입력");
     return;
   }
 
@@ -207,8 +201,8 @@ function addItem(){
     hospital:hospital.value,
     name:name.value,
     qty:Number(qty.value),
-    exp:exp.value||"",
-    lot:lot.value||""
+    exp:exp.value || "",
+    lot:lot.value || ""
   });
 
   saveData();
@@ -218,14 +212,14 @@ function addItem(){
 /* ===== BULK ===== */
 function bulkAdd(){
 
-  bulkInput.value.split("\n").forEach(l=>{
+  bulkInput.value.split("\n").forEach(line=>{
 
-    let p=l.split("|");
+    let p=line.split("|");
     if(!p[0]) return;
 
     mergeItem({
       hospital:hospital.value,
-      name:p[0].trim(),
+      name:(p[0]||"").trim(),
       qty:Number(p[1]||0),
       exp:(p[2]||"").trim(),
       lot:(p[3]||"").trim()
@@ -236,15 +230,24 @@ function bulkAdd(){
   render();
 }
 
-/* ===== OUT ===== */
+/* ===== OUT (자동 차감) ===== */
 function addOut(){
 
-  let t = items.find(i=>i.name===out_name.value);
+  let target = items.find(i => i.name === out_name.value);
 
-  if(!t){alert("없음");return;}
-  if(t.qty < out_qty.value){alert("부족");return;}
+  if(!target){
+    alert("재고 없음");
+    return;
+  }
 
-  t.qty -= Number(out_qty.value);
+  let q = Number(out_qty.value);
+
+  if(target.qty < q){
+    alert("재고 부족");
+    return;
+  }
+
+  target.qty -= q;
 
   saveData();
   render();
@@ -263,13 +266,13 @@ function del(i){
   render();
 }
 
-/* ===== DASH ===== */
+/* ===== DASHBOARD ===== */
 function dash(){
 
   let m={};
 
   items.forEach(i=>{
-    m[i.hospital]=(m[i.hospital]||0)+i.qty;
+    m[i.hospital] = (m[i.hospital]||0)+i.qty;
   });
 
   dashboard.innerHTML="";
@@ -303,7 +306,7 @@ function render(){
 
         <td><input value="${i.lot}" onchange="edit(${idx},'lot',this.value)"></td>
 
-        <td><button onclick="del(${idx})">X</button></td>
+        <td><button onclick="del(${idx})">삭제</button></td>
       </tr>
     `;
   });
