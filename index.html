@@ -100,7 +100,13 @@ li{padding:6px;border-bottom:1px solid #eee;}
 
 <div class="box">
   <h3>📥 대량 등록</h3>
-  <textarea id="bulkInput" rows="5" style="width:100%"></textarea>
+
+  <p style="font-size:12px;color:#666;">
+    형식: 시약명 | 수량 | 유효기간 | LOT
+  </p>
+
+  <textarea id="bulkInput" rows="6" style="width:100%"></textarea>
+
   <button onclick="bulkAdd()">일괄등록</button>
 </div>
 
@@ -211,18 +217,30 @@ function addItem(){
 /* ===== BULK ===== */
 function bulkAdd(){
 
-  bulkInput.value.split("\n").forEach(n=>{
-    if(!n.trim()) return;
+  bulkInput.value.split("\n").forEach(line=>{
+
+    if(!line.trim()) return;
+
+    let parts = line.split("|");
+
+    let name = parts[0]?.trim();
+    let qty = parts[1]?.trim();
+    let exp = parts[2]?.trim();
+    let lot = parts[3]?.trim();
+
+    if(!name) return;
 
     items.push({
       hospital:hospital.value,
-      name:n.trim(),
-      qty:0,
-      exp:""
+      name:name,
+      qty: qty ? Number(qty) : 0,
+      exp: exp || "",
+      lot: lot || ""
     });
   });
 
   render();
+}
 }
 
 /* ===== RENDER (핵심 안정화) ===== */
@@ -248,9 +266,10 @@ function render(){
     if(i.qty<=10)
       lowStock.innerHTML+=`<li>${i.name} (${i.qty})</li>`;
 
-    list.innerHTML+=
-    `<li>${i.hospital} | ${i.name} | ${i.qty} | ${status}</li>`;
-  });
+ list.innerHTML+=
+`<li>
+  ${i.hospital} | ${i.name} | ${i.qty} | ${status} | LOT:${i.lot || "-"}
+</li>`;
 
   /* 거래처 버튼 생성 */
   [...new Set(items.map(i=>i.hospital))].forEach(c=>{
