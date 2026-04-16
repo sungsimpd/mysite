@@ -60,12 +60,6 @@ td,th{
   padding:6px;
 }
 
-/* RIGHT 유지 */
-.rightBox{
-  max-height:300px;
-  overflow-y:auto;
-}
-
 .alert{
   background:#fff;
   border-left:4px solid #2f7d4e;
@@ -96,8 +90,14 @@ td,th{
 
   <input id="name" placeholder="시약명">
   <input id="qty" type="number" placeholder="수량">
-  <input id="exp" type="date">
+
+  <!-- ✔ 날짜 UX 개선 -->
+  <input id="year" placeholder="YYYY" maxlength="4" style="width:70px;">
+  <input id="month" placeholder="MM" maxlength="2" style="width:50px;">
+  <input id="day" placeholder="DD" maxlength="2" style="width:50px;">
+
   <input id="lot" placeholder="LOT">
+
   <button onclick="addItem()">등록</button>
 </div>
 
@@ -109,7 +109,7 @@ td,th{
   <button onclick="outItem()">출고</button>
 </div>
 
-<!-- 재고 목록 -->
+<!-- 재고 -->
 <div class="box">
   <h3>📋 재고 목록</h3>
 
@@ -130,12 +130,12 @@ td,th{
 
 </div>
 
-<!-- RIGHT (미납 유지) -->
+<!-- RIGHT -->
 <div class="right">
 
 <div class="box">
   <h3>⚠ 미납 시약 관리</h3>
-  <div class="rightBox" id="backlog"></div>
+  <div id="backlog"></div>
 </div>
 
 </div>
@@ -145,54 +145,61 @@ td,th{
 <script>
 
 /* ================= STATE ================= */
-let items = [];
-let backlog = [];
+let items=[];
+let backlog=[];
 
 /* ================= INIT ================= */
-window.onload = () => {
-  items = JSON.parse(localStorage.getItem("items") || "[]");
-  backlog = JSON.parse(localStorage.getItem("backlog") || "[]");
+window.onload=()=>{
+  items=JSON.parse(localStorage.getItem("items")||"[]");
+  backlog=JSON.parse(localStorage.getItem("backlog")||"[]");
   render();
   renderBacklog();
 };
 
 /* ================= SAVE ================= */
 function save(){
-  localStorage.setItem("items", JSON.stringify(items));
-  localStorage.setItem("backlog", JSON.stringify(backlog));
+  localStorage.setItem("items",JSON.stringify(items));
+  localStorage.setItem("backlog",JSON.stringify(backlog));
 }
 
-/* ================= ADD (중복 합산 유지) ================= */
+/* ================= DATE FORMAT ================= */
+function makeDate(){
+  const y=year.value;
+  const m=month.value;
+  const d=day.value;
+
+  if(!y || !m || !d){
+    return "";
+  }
+
+  return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
+}
+
+/* ================= ADD ITEM ================= */
 function addItem(){
 
-  const h = hospital.value;
-  const n = name.value;
-  const q = Number(qty.value);
-  const e = exp.value;
-  const l = lot.value;
+  const h=hospital.value;
+  const n=name.value;
+  const q=Number(qty.value);
+  const e=makeDate();
+  const l=lot.value;
 
   if(!n || !q){
-    alert("필수 입력");
+    alert("필수입력 누락");
     return;
   }
 
-  let t = items.find(i =>
-    i.hospital === h &&
-    i.name === n &&
-    i.exp === e &&
-    i.lot === l
+  let t=items.find(i =>
+    i.hospital===h &&
+    i.name===n &&
+    i.exp===e &&
+    i.lot===l
   );
 
   if(t){
-    t.qty += q;
+    t.qty+=q;
   }else{
-    items.push({
-      hospital:h,
-      name:n,
-      qty:q,
-      exp:e,
-      lot:l
-    });
+    items.push({hospital:h,name:n,qty:q,exp:e,lot:l});
   }
 
   save();
@@ -202,29 +209,22 @@ function addItem(){
 /* ================= OUT ================= */
 function outItem(){
 
-  const n = out_name.value;
-  const q = Number(out_qty.value);
+  const n=out_name.value;
+  const q=Number(out_qty.value);
 
-  let t = items.find(i => i.name === n);
+  let t=items.find(i=>i.name===n);
 
-  if(!t){
-    alert("재고 없음");
-    return;
-  }
+  if(!t) return alert("재고 없음");
+  if(t.qty<q) return alert("부족");
 
-  if(t.qty < q){
-    alert("수량 부족");
-    return;
-  }
-
-  t.qty -= q;
+  t.qty-=q;
 
   save();
   render();
 }
 
 /* ================= DELETE ================= */
-function deleteItem(i){
+function del(i){
   items.splice(i,1);
   save();
   render();
@@ -233,47 +233,47 @@ function deleteItem(i){
 /* ================= RENDER ================= */
 function render(){
 
-  list.innerHTML = "";
+  list.innerHTML="";
 
   items.forEach((i,idx)=>{
 
-    list.innerHTML += `
+    list.innerHTML+=`
       <tr>
         <td>${i.hospital}</td>
         <td>${i.name}</td>
         <td>${i.qty}</td>
-        <td>${i.exp||""}</td>
-        <td>${i.lot||""}</td>
-        <td><button onclick="deleteItem(${idx})">삭제</button></td>
+        <td>${i.exp}</td>
+        <td>${i.lot}</td>
+        <td><button onclick="del(${idx})">삭제</button></td>
       </tr>
     `;
   });
 }
 
-/* ================= BACKLOG (오른쪽 유지) ================= */
-function renderBacklog(){
-
-  backlog.innerHTML = "";
-
-  backlog.forEach(b=>{
-    backlog.innerHTML += `
-      <div class="alert">
-        ${b.name || "미납"} / ${b.text || "대기"}
-      </div>
-    `;
-  });
-}
-
-/* ================= 자동 미납 테스트 ================= */
-function addBacklog(){
+/* ================= BACKLOG (복구된 핵심 기능) ================= */
+function addBacklogAuto(item){
 
   backlog.push({
-    name:"미납",
-    text:"자동 등록"
+    name:item.name,
+    qty:item.qty,
+    reason:"자동 미납"
   });
 
   save();
   renderBacklog();
+}
+
+function renderBacklog(){
+
+  backlog.innerHTML="";
+
+  backlog.forEach(b=>{
+    backlog.innerHTML+=`
+      <div class="alert">
+        ${b.name} / ${b.qty} / ${b.reason}
+      </div>
+    `;
+  });
 }
 
 </script>
