@@ -352,14 +352,14 @@ input:focus,select:focus{
 }
 
 button{
-  padding:7px 11px;
-  min-height:36px;
+  padding:4px 8px;
+  min-height:28px;
   background:linear-gradient(135deg,#256843,#319766);
   color:#fff;
   border:none;
-  border-radius:11px;
+  border-radius:8px;
   cursor:pointer;
-  font-size:12px;
+  font-size:11px;
   font-weight:700;
 }
 
@@ -432,18 +432,6 @@ button:hover{
   border:1px solid #d1e3d8;
 }
 
-.groupHeader td{
-  background:#edf7f1 !important;
-  color:#315040;
-  font-size:11px;
-  font-weight:900;
-  text-align:left;
-  padding:8px 12px !important;
-  border-top:1px solid #d9eade;
-  border-bottom:1px solid #d9eade;
-  letter-spacing:0.2px;
-}
-
 /* TABLE */
 .tableWrap{
   overflow-x:auto;
@@ -469,11 +457,12 @@ thead th{
 
 td,th{
   border-bottom:1px solid #edf3ef;
-  padding:5px 6px;
-  line-height:1.25;
+  padding:1px 5px;
+  line-height:1.05;
   text-align:center;
   vertical-align:middle;
   font-size:11px;
+  height:24px;
 }
 
 tbody tr:hover{
@@ -481,15 +470,29 @@ tbody tr:hover{
 }
 
 td input{
-  width:95%;
-  min-width:70px;
-  height:30px;
-  padding:4px 8px;
+  width:98%;
+  min-width:60px;
+  height:22px;
+  padding:1px 5px;
   font-size:11px;
+  border-radius:6px;
 }
 
 .noteInput{
-  min-width:140px;
+  min-width:110px;
+}
+
+.groupHeader td{
+  background:#edf7f1 !important;
+  color:#315040;
+  font-size:11px;
+  font-weight:900;
+  text-align:left;
+  padding:4px 10px !important;
+  height:30px;
+  border-top:1px solid #d9eade;
+  border-bottom:1px solid #d9eade;
+  letter-spacing:0.1px;
 }
 
 .emptyRow{
@@ -829,104 +832,16 @@ const LOGIN_ID = "sungsim";
 const LOGIN_PW = "8658";
 
 const REAGENT_MASTER = [
-  "ALB",
-  "ALB-T",
-  "ALP",
-  "ALT",
-  "AMYL",
-  "START",
-  "AST",
-  "BIL-D",
-  "BIL-T",
-  "BT 1000ul TIP",
-  "CA",
-  "CELL WASH 1",
-  "CELL WASH 2",
-  "CFAS",
-  "CFAS LIPID",
-  "CFAS PROTEIN",
-  "CHOL",
-  "CK",
-  "CO2",
-  "CO2 CAL",
-  "CONTROLSET RF",
-  "CREAJ",
-  "CRP",
-  "ECO",
-  "GGT",
-  "GLUC",
-  "HDLC",
-  "IRON",
-  "ISE DILUENT",
-  "ISE INTERNAL",
-  "ISE REFERENCE ELECTRO",
-  "ISE HIGH",
-  "ISE LOW",
-  "LDLC",
-  "LDHI",
-  "LIPC",
-  "MG",
-  "NAOHD",
-  "NACL",
-  "PCCC1",
-  "PCCC2",
-  "NA",
-  "K",
-  "CL",
-  "REF",
-  "PHOS",
-  "PRECISET RF",
-  "REACTION CELL",
-  "RF",
-  "SMS",
-  "TP",
-  "TPUC",
-  "TRIGL",
-  "UA",
-  "UIBC",
-  "UREA",
-  "HBSAG",
-  "A-HBS",
-  "HBEAG",
-  "A-HBE",
-  "ESTRADIOL",
-  "PROLACTIN",
-  "TESTOSTERONE",
-  "LH",
-  "FSH",
-  "VITAMIN D",
-  "A-TSHR",
-  "A-TPO",
-  "A-TG",
-  "A-HAV",
-  "A-HAV IGM",
-  "A-HCV",
-  "FSH CS",
-  "ESTRADIOL CS",
-  "PROLACTIN CS",
-  "LH CS",
-  "TESTOSTERONE CS",
-  "VITAMIN D CS",
-  "A-TSHR CS",
-  "HBSAG PC",
-  "A-HBS PC",
-  "HBEAG PC",
-  "A-HBE PC",
-  "HAV PC",
-  "HAV IGM PC",
-  "HCV PC",
-  "PC THYROAB",
-  "PC UNIVERSAL",
-  "PC TM",
-  "DILUENT UNIVERSAL",
-  "DILUENT MULTIASSAY",
-  "CLEANCELL",
-  "PROCELL",
-  "PRECLEAN",
-  "TIPCUP TRAY",
-  "TG CS",
-  "TPO CS",
-  "VITAMIN D PC"
+  "ALB","ALB-T","ALP","ALT","AMYL","START","AST","BIL-D","BIL-T","BT 1000ul TIP",
+  "CA","CELL WASH 1","CELL WASH 2","CFAS","CFAS LIPID","CFAS PROTEIN","CHOL","CK","CO2","CO2 CAL",
+  "CONTROLSET RF","CREAJ","CRP","ECO","GGT","GLUC","HDLC","IRON","ISE DILUENT","ISE INTERNAL",
+  "ISE REFERENCE ELECTRO","ISE HIGH","ISE LOW","LDLC","LDHI","LIPC","MG","NAOHD","NACL","PCCC1","PCCC2",
+  "NA","K","CL","REF","PHOS","PRECISET RF","REACTION CELL","RF","SMS","TP","TPUC","TRIGL","UA","UIBC","UREA",
+  "HBSAG","A-HBS","HBEAG","A-HBE","ESTRADIOL","PROLACTIN","TESTOSTERONE","LH","FSH","VITAMIN D","A-TSHR",
+  "A-TPO","A-TG","A-HAV","A-HAV IGM","A-HCV","FSH CS","ESTRADIOL CS","PROLACTIN CS","LH CS","TESTOSTERONE CS",
+  "VITAMIN D CS","A-TSHR CS","HBSAG PC","A-HBS PC","HBEAG PC","A-HBE PC","HAV PC","HAV IGM PC","HCV PC",
+  "PC THYROAB","PC UNIVERSAL","PC TM","DILUENT UNIVERSAL","DILUENT MULTIASSAY","CLEANCELL","PROCELL","PRECLEAN",
+  "TIPCUP TRAY","TG CS","TPO CS","VITAMIN D PC"
 ];
 
 let items = [];
@@ -940,15 +855,11 @@ let monthFilter = "all";
 let monthStartLockedContext = JSON.parse(localStorage.getItem("monthStartLockedContext") || "null");
 let midLockedContext = JSON.parse(localStorage.getItem("midLockedContext") || "null");
 
-/* LOGIN */
 function checkLoginState(){
   const isLoggedIn = localStorage.getItem("sungsimLoggedIn") === "true";
   document.getElementById("loginScreen").style.display = isLoggedIn ? "none" : "flex";
   document.getElementById("appScreen").style.display = isLoggedIn ? "block" : "none";
-
-  if(isLoggedIn){
-    initializeApp();
-  }
+  if(isLoggedIn) initializeApp();
 }
 
 function login(){
@@ -970,7 +881,6 @@ function logout(){
   location.reload();
 }
 
-/* CLOCK */
 function updateClock(){
   const now = new Date();
   const y = now.getFullYear();
@@ -984,7 +894,6 @@ function updateClock(){
 }
 setInterval(updateClock, 1000);
 
-/* HELPERS */
 function getCurrentPeriod(){
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -1058,7 +967,6 @@ function itemKey(obj){
   ].join("||");
 }
 
-/* STORAGE */
 function save(){
   localStorage.setItem("items", JSON.stringify(items));
   localStorage.setItem("backlog", JSON.stringify(backlog));
@@ -1082,17 +990,12 @@ function load(){
   midLockedContext = JSON.parse(localStorage.getItem("midLockedContext") || "null");
 }
 
-/* MASTER LIST */
 function renderReagentMasterList(){
   const datalist = document.getElementById("reagentMasterList");
   if(!datalist) return;
-
-  datalist.innerHTML = REAGENT_MASTER
-    .map(name => `<option value="${name}"></option>`)
-    .join("");
+  datalist.innerHTML = REAGENT_MASTER.map(name => `<option value="${name}"></option>`).join("");
 }
 
-/* FORMATTERS */
 function bindInputFormatters(){
   const upperIds = [
     "reagentName","lot","b_name","b_lot","p_name","p_lot",
@@ -1156,7 +1059,6 @@ function bindInputFormatters(){
   });
 }
 
-/* MONTH ROLLOVER */
 function checkMonthRollover(){
   const current = getCurrentPeriod();
   const savedPeriod = localStorage.getItem("currentPeriod");
@@ -1190,7 +1092,6 @@ function checkMonthRollover(){
   save();
 }
 
-/* YEAR FILTER */
 function initYearFilter(){
   const yearFilterEl = document.getElementById("yearFilter");
   const set = new Set();
@@ -1222,14 +1123,12 @@ function initYearFilter(){
     : "all";
 }
 
-/* FILTER */
 function applyFilter(){
   yearFilter = document.getElementById("yearFilter").value;
   monthFilter = document.getElementById("monthFilter").value;
   render();
 }
 
-/* LOCK STATE */
 function renderMonthStartLockState(){
   const badge = document.getElementById("msLockBadge");
   const yearEl = document.getElementById("ms_year");
@@ -1326,7 +1225,6 @@ function unlockMidContext(){
   renderMidOrders();
 }
 
-/* INVENTORY */
 function addItem(){
   formatDateInputParts();
 
@@ -1410,7 +1308,6 @@ function del(id){
   render();
 }
 
-/* ORDERS */
 function addMonthStartOrder(){
   let year = "";
   let month = "";
@@ -1501,7 +1398,6 @@ function delMidOrder(id){
   renderMidOrders();
 }
 
-/* PREPAID */
 function addPrepaid(){
   const hospital = document.getElementById("p_hospital").value;
   const name = normalizeUpper(document.getElementById("p_name").value);
@@ -1530,7 +1426,6 @@ function delPrepaid(id){
   renderPrepaid();
 }
 
-/* BACKLOG */
 function addBacklog(){
   const hospital = document.getElementById("b_hospital").value;
   const name = normalizeUpper(document.getElementById("b_name").value);
@@ -1559,7 +1454,6 @@ function delBacklog(id){
   renderBacklog();
 }
 
-/* REFRESH */
 function refreshList(){
   load();
   checkMonthRollover();
@@ -1573,7 +1467,6 @@ function refreshList(){
   renderBacklog();
 }
 
-/* RENDER */
 function render(){
   const tbody = document.getElementById("list");
   tbody.innerHTML = "";
@@ -1779,7 +1672,6 @@ function renderBacklog(){
   });
 }
 
-/* INIT */
 function initializeApp(){
   updateClock();
   load();
