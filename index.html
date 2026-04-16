@@ -13,6 +13,7 @@ body{
 
 /* HEADER */
 header{
+  position:relative;
   background:#fff;
   padding:18px;
   text-align:center;
@@ -21,14 +22,30 @@ header{
   border-bottom:2px solid #d6eadc;
 }
 
-/* FILTER BAR */
+/* CLOCK */
+#clockBox{
+  position:absolute;
+  right:16px;
+  top:50%;
+  transform:translateY(-50%);
+  background:#f4fbf7;
+  border:1px solid #cfe8d8;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:600;
+  color:#2f7d4e;
+  letter-spacing:0.3px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.05);
+}
+
+/* FILTER */
 .topbar{
   display:flex;
   gap:10px;
   padding:12px 20px;
   background:#f6fbf8;
   border-bottom:1px solid #d6eadc;
-  align-items:center;
 }
 
 select{
@@ -36,7 +53,6 @@ select{
   border:1px solid #cfe8d8;
   border-radius:8px;
   font-size:13px;
-  background:#fff;
 }
 
 /* LAYOUT */
@@ -75,7 +91,6 @@ button{
   font-size:12px;
 }
 
-/* TABLE */
 table{
   width:100%;
   border-collapse:collapse;
@@ -91,7 +106,6 @@ td input{
   width:90%;
 }
 
-/* ALERT */
 .alert{
   background:#f6fbf8;
   border:1px solid #cfe8d8;
@@ -105,7 +119,10 @@ td input{
 
 <body>
 
-<header>SUNGSIM</header>
+<header>
+  SUNGSIM
+  <div id="clockBox"></div>
+</header>
 
 <!-- FILTER -->
 <div class="topbar">
@@ -204,10 +221,33 @@ let backlog = [];
 let yearFilter = "all";
 let monthFilter = "all";
 
+/* CLOCK */
+function updateClock(){
+
+  const now = new Date();
+
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,"0");
+  const d = String(now.getDate()).padStart(2,"0");
+
+  const h = String(now.getHours()).padStart(2,"0");
+  const mi = String(now.getMinutes()).padStart(2,"0");
+  const s = String(now.getSeconds()).padStart(2,"0");
+
+  document.getElementById("clockBox").innerHTML =
+    `${y}-${m}-${d} ${h}:${mi}:${s}`;
+}
+
+setInterval(updateClock,1000);
+updateClock();
+
 /* INIT */
 window.onload = () => {
+
   items = JSON.parse(localStorage.getItem("items") || "[]");
   backlog = JSON.parse(localStorage.getItem("backlog") || "[]");
+
+  checkMonthRollover();
 
   initYearFilter();
   render();
@@ -220,6 +260,28 @@ function save(){
   localStorage.setItem("backlog", JSON.stringify(backlog));
 }
 
+/* MONTH ROLLOVER */
+function checkMonthRollover(){
+
+  const now = new Date();
+  const current = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
+
+  const saved = localStorage.getItem("currentPeriod");
+
+  if(saved === current) return;
+
+  const copy = items.map(i=>({
+    ...i,
+    id: Date.now() + Math.random(),
+    period: current
+  }));
+
+  items = items.concat(copy);
+
+  localStorage.setItem("currentPeriod", current);
+  save();
+}
+
 /* FILTER */
 function applyFilter(){
   yearFilter = document.getElementById("yearFilter").value;
@@ -229,14 +291,23 @@ function applyFilter(){
 
 /* YEAR FILTER */
 function initYearFilter(){
-  let set = new Set();
-
-  items.forEach(i=>{
-    let y = (i.createdAt || "").split("-")[0];
-    if(y) set.add(y);
-  });
 
   const y = document.getElementById("yearFilter");
+  let set = new Set();
+
+  const nowYear = new Date().getFullYear();
+
+  items.forEach(i=>{
+    let y1 = (i.createdAt||"").split("-")[0];
+    let y2 = (i.exp||"").split("-")[0];
+    if(y1) set.add(y1);
+    if(y2) set.add(y2);
+  });
+
+  for(let i=nowYear-2;i<=nowYear+3;i++){
+    set.add(String(i));
+  }
+
   y.innerHTML = `<option value="all">전체연도</option>`;
 
   [...set].sort((a,b)=>b-a).forEach(v=>{
@@ -253,13 +324,12 @@ function addItem(){
   const e = `${document.getElementById("year").value}-${document.getElementById("month").value}-${document.getElementById("day").value}`;
   const l = document.getElementById("lot").value;
 
-  if(!n || isNaN(q) || q <= 0){
+  if(!n || isNaN(q) || q<=0){
     alert("필수입력");
     return;
   }
 
   let id = Date.now();
-
   let createdAt = new Date().toISOString().split("T")[0];
 
   items.push({
@@ -269,7 +339,8 @@ function addItem(){
     qty:q,
     exp:e,
     lot:l,
-    createdAt
+    createdAt,
+    period: createdAt.slice(0,7)
   });
 
   save();
@@ -279,12 +350,13 @@ function addItem(){
 
 /* UPDATE */
 function update(id,key,val){
+
   let t = items.find(i=>i.id===id);
   if(!t) return;
 
   if(key==="qty") val = Number(val);
 
-  t[key] = val;
+  t[key]=val;
   save();
 }
 
@@ -329,6 +401,7 @@ function render(){
 
 /* BACKLOG */
 function addBacklog(){
+
   backlog.push({
     hospital:document.getElementById("b_hospital").value,
     name:document.getElementById("b_name").value,
@@ -348,6 +421,7 @@ function delBacklog(i){
 }
 
 function renderBacklog(){
+
   const box = document.getElementById("backlogList");
   box.innerHTML = "";
 
