@@ -207,17 +207,28 @@ function loadData(){
 /* ===== ADD ===== */
 function addItem(){
 
+  let n = document.getElementById("name").value;
+  let q = document.getElementById("qty").value;
+  let e = document.getElementById("exp").value;
+  let l = document.getElementById("lot").value;
+
+  if(!n || !q){
+    alert("시약명 / 수량 필수");
+    return;
+  }
+
   items.push({
     hospital:hospital.value,
-    name:name.value,
-    qty:Number(qty.value),
-    exp:exp.value,
-    lot:lot.value
+    name:n,
+    qty:Number(q),
+    exp:e || "",
+    lot:l || ""
   });
 
   saveData();
   render();
 }
+
 
 /* ===== BULK ===== */
 function bulkAdd(){
