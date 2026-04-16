@@ -21,7 +21,7 @@ header{
   background:rgba(255,255,255,0.92);
   backdrop-filter:blur(10px);
   border-bottom:1px solid #d9ece0;
-  padding:22px 24px 20px;
+  padding:24px 24px 20px;
   box-shadow:0 4px 18px rgba(0,0,0,0.04);
 }
 
@@ -40,22 +40,22 @@ header{
 }
 
 .logoTitle{
-  font-size:34px;
+  font-size:38px;
   font-weight:900;
-  letter-spacing:1.8px;
+  letter-spacing:2px;
   line-height:1;
   margin:0;
-  background:linear-gradient(90deg,#1f5f3b,#3f9a67);
+  background:linear-gradient(90deg,#184f32,#3fa06d);
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
 }
 
 .logoSub{
-  margin-top:6px;
+  margin-top:7px;
   font-size:11px;
   font-weight:700;
-  letter-spacing:2px;
-  color:#6e8b7a;
+  letter-spacing:2.4px;
+  color:#789181;
   text-transform:uppercase;
 }
 
@@ -64,15 +64,12 @@ header{
   right:0;
   top:50%;
   transform:translateY(-50%);
-  background:#f4fbf7;
-  border:1px solid #cfe8d8;
-  padding:8px 13px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:800;
-  color:#2f7d4e;
-  box-shadow:0 2px 8px rgba(0,0,0,0.05);
+  font-size:13px;
+  font-weight:700;
+  letter-spacing:0.8px;
+  color:#587765;
   white-space:nowrap;
+  opacity:0.95;
 }
 
 /* LAYOUT */
@@ -264,7 +261,7 @@ td input{
   background:#f8fcf9;
   border:1px solid #dceee3;
   border-radius:14px;
-  padding:10px 12px;
+  padding:11px 12px;
   margin:8px 0;
   display:flex;
   justify-content:space-between;
@@ -273,13 +270,21 @@ td input{
 }
 
 .orderText{
-  line-height:1.6;
+  line-height:1.65;
   font-size:12px;
 }
 
 .orderStrong{
   font-weight:800;
   color:#244d37;
+}
+
+.orderVendor{
+  font-size:11px;
+  font-weight:800;
+  color:#2f7d4e;
+  margin-bottom:2px;
+  letter-spacing:0.3px;
 }
 
 @media (max-width: 960px){
@@ -323,9 +328,12 @@ td input{
         <h3 style="margin:0;">🗂 월초발주 목록 등록</h3>
         <span class="panelCount" id="monthStartOrderCount">0건</span>
       </div>
-      <p class="subTitle">조회 연/월 기준의 월초발주 내역입니다.</p>
+      <p class="subTitle">연 / 월 / 거래처 기준으로 월초발주를 등록합니다.</p>
 
       <div class="row">
+        <input id="ms_year" placeholder="YYYY" maxlength="4" style="width:76px;">
+        <input id="ms_month" placeholder="MM" maxlength="2" style="width:56px;">
+        <input id="ms_vendor" placeholder="거래처">
         <input id="ms_name" placeholder="품명">
         <input id="ms_spec" placeholder="규격">
         <input id="ms_qty" type="number" placeholder="발주량" min="1">
@@ -341,9 +349,12 @@ td input{
         <h3 style="margin:0;">🗂 중간발주 목록 등록</h3>
         <span class="panelCount" id="midOrderCount">0건</span>
       </div>
-      <p class="subTitle">조회 연/월 기준의 중간발주 내역입니다.</p>
+      <p class="subTitle">연 / 월 / 거래처 기준으로 중간발주를 등록합니다.</p>
 
       <div class="row">
+        <input id="mid_year" placeholder="YYYY" maxlength="4" style="width:76px;">
+        <input id="mid_month" placeholder="MM" maxlength="2" style="width:56px;">
+        <input id="mid_vendor" placeholder="거래처">
         <input id="mid_name" placeholder="품명">
         <input id="mid_spec" placeholder="규격">
         <input id="mid_qty" type="number" placeholder="발주량" min="1">
@@ -506,7 +517,7 @@ function updateClock(){
   const h = String(now.getHours()).padStart(2, "0");
   const mi = String(now.getMinutes()).padStart(2, "0");
   const s = String(now.getSeconds()).padStart(2, "0");
-  document.getElementById("clockBox").textContent = `${y}-${m}-${d} ${h}:${mi}:${s}`;
+  document.getElementById("clockBox").textContent = `${y}.${m}.${d}  ${h}:${mi}:${s}`;
 }
 setInterval(updateClock, 1000);
 
@@ -569,6 +580,13 @@ function formatYmdString(v){
   return `${y}-${m}-${d}`;
 }
 
+function formatYmString(yearValue, monthValue){
+  const y = formatYear(yearValue);
+  const m = formatMonth(monthValue);
+  if(y.length !== 4 || !m) return "";
+  return `${y}-${m}`;
+}
+
 function formatDateInputParts(){
   const yearEl = document.getElementById("year");
   const monthEl = document.getElementById("month");
@@ -608,8 +626,12 @@ function load(){
 
 /* ---------------- INPUT AUTO FORMAT ---------------- */
 function bindInputFormatters(){
-  const ids = ["reagentName","lot","b_name","b_lot","p_name","p_lot","ms_name","ms_spec","mid_name","mid_spec"];
-  ids.forEach(id => {
+  const upperIds = [
+    "reagentName","lot","b_name","b_lot","p_name","p_lot",
+    "ms_vendor","ms_name","ms_spec","mid_vendor","mid_name","mid_spec"
+  ];
+
+  upperIds.forEach(id => {
     const el = document.getElementById(id);
     if(el){
       el.addEventListener("input", e => {
@@ -618,25 +640,42 @@ function bindInputFormatters(){
     }
   });
 
-  const yearEl = document.getElementById("year");
-  const monthEl = document.getElementById("month");
-  const dayEl = document.getElementById("day");
+  const inventoryYear = document.getElementById("year");
+  const inventoryMonth = document.getElementById("month");
+  const inventoryDay = document.getElementById("day");
 
-  yearEl.addEventListener("input", () => {
-    yearEl.value = formatYear(yearEl.value);
+  inventoryYear.addEventListener("input", () => {
+    inventoryYear.value = formatYear(inventoryYear.value);
   });
 
-  monthEl.addEventListener("input", () => {
-    monthEl.value = digitsOnly(monthEl.value).slice(0, 2);
+  inventoryMonth.addEventListener("input", () => {
+    inventoryMonth.value = digitsOnly(inventoryMonth.value).slice(0, 2);
   });
 
-  dayEl.addEventListener("input", () => {
-    dayEl.value = digitsOnly(dayEl.value).slice(0, 2);
+  inventoryDay.addEventListener("input", () => {
+    inventoryDay.value = digitsOnly(inventoryDay.value).slice(0, 2);
   });
 
-  monthEl.addEventListener("blur", formatDateInputParts);
-  dayEl.addEventListener("blur", formatDateInputParts);
-  yearEl.addEventListener("blur", formatDateInputParts);
+  inventoryMonth.addEventListener("blur", formatDateInputParts);
+  inventoryDay.addEventListener("blur", formatDateInputParts);
+  inventoryYear.addEventListener("blur", formatDateInputParts);
+
+  ["ms_year","mid_year"].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener("input", () => {
+      el.value = formatYear(el.value);
+    });
+  });
+
+  ["ms_month","mid_month"].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener("input", () => {
+      el.value = digitsOnly(el.value).slice(0, 2);
+    });
+    el.addEventListener("blur", () => {
+      el.value = formatMonth(el.value);
+    });
+  });
 
   document.getElementById("b_exp").addEventListener("blur", e => {
     e.target.value = formatYmdString(e.target.value);
@@ -814,12 +853,19 @@ function del(id){
 
 /* ---------------- MONTH START ORDER ---------------- */
 function addMonthStartOrder(){
+  const period = formatYmString(
+    document.getElementById("ms_year").value,
+    document.getElementById("ms_month").value
+  );
+  const vendor = normalizeUpper(document.getElementById("ms_vendor").value);
   const name = normalizeUpper(document.getElementById("ms_name").value);
   const spec = normalizeUpper(document.getElementById("ms_spec").value);
   const qty = Number(document.getElementById("ms_qty").value);
-  const period = getSelectedPeriod();
 
-  if(!name || !spec || isNaN(qty) || qty <= 0){
+  document.getElementById("ms_year").value = formatYear(document.getElementById("ms_year").value);
+  document.getElementById("ms_month").value = formatMonth(document.getElementById("ms_month").value);
+
+  if(!period || !vendor || !name || !spec || isNaN(qty) || qty <= 0){
     alert("월초발주 입력값을 확인해주세요.");
     return;
   }
@@ -827,6 +873,7 @@ function addMonthStartOrder(){
   monthStartOrders.push({
     id: makeId(),
     period,
+    vendor,
     name,
     spec,
     qty
@@ -836,6 +883,9 @@ function addMonthStartOrder(){
   renderMonthStartOrders();
   initYearFilter();
 
+  document.getElementById("ms_year").value = "";
+  document.getElementById("ms_month").value = "";
+  document.getElementById("ms_vendor").value = "";
   document.getElementById("ms_name").value = "";
   document.getElementById("ms_spec").value = "";
   document.getElementById("ms_qty").value = "";
@@ -854,7 +904,10 @@ function renderMonthStartOrders(){
 
   const filtered = monthStartOrders
     .filter(i => i.period === period)
-    .sort((a,b) => b.id - a.id);
+    .sort((a,b) => {
+      if(a.vendor !== b.vendor) return a.vendor.localeCompare(b.vendor);
+      return b.id - a.id;
+    });
 
   countEl.textContent = `${filtered.length}건`;
   box.innerHTML = "";
@@ -868,6 +921,7 @@ function renderMonthStartOrders(){
     box.innerHTML += `
       <div class="orderCard">
         <div class="orderText">
+          <div class="orderVendor">${i.vendor}</div>
           <span class="orderStrong">${i.period}</span><br>
           품명 ${i.name} | 규격 ${i.spec} | 발주량 ${i.qty}
         </div>
@@ -879,12 +933,19 @@ function renderMonthStartOrders(){
 
 /* ---------------- MID ORDER ---------------- */
 function addMidOrder(){
+  const period = formatYmString(
+    document.getElementById("mid_year").value,
+    document.getElementById("mid_month").value
+  );
+  const vendor = normalizeUpper(document.getElementById("mid_vendor").value);
   const name = normalizeUpper(document.getElementById("mid_name").value);
   const spec = normalizeUpper(document.getElementById("mid_spec").value);
   const qty = Number(document.getElementById("mid_qty").value);
-  const period = getSelectedPeriod();
 
-  if(!name || !spec || isNaN(qty) || qty <= 0){
+  document.getElementById("mid_year").value = formatYear(document.getElementById("mid_year").value);
+  document.getElementById("mid_month").value = formatMonth(document.getElementById("mid_month").value);
+
+  if(!period || !vendor || !name || !spec || isNaN(qty) || qty <= 0){
     alert("중간발주 입력값을 확인해주세요.");
     return;
   }
@@ -892,6 +953,7 @@ function addMidOrder(){
   midOrders.push({
     id: makeId(),
     period,
+    vendor,
     name,
     spec,
     qty
@@ -901,6 +963,9 @@ function addMidOrder(){
   renderMidOrders();
   initYearFilter();
 
+  document.getElementById("mid_year").value = "";
+  document.getElementById("mid_month").value = "";
+  document.getElementById("mid_vendor").value = "";
   document.getElementById("mid_name").value = "";
   document.getElementById("mid_spec").value = "";
   document.getElementById("mid_qty").value = "";
@@ -919,7 +984,10 @@ function renderMidOrders(){
 
   const filtered = midOrders
     .filter(i => i.period === period)
-    .sort((a,b) => b.id - a.id);
+    .sort((a,b) => {
+      if(a.vendor !== b.vendor) return a.vendor.localeCompare(b.vendor);
+      return b.id - a.id;
+    });
 
   countEl.textContent = `${filtered.length}건`;
   box.innerHTML = "";
@@ -933,6 +1001,7 @@ function renderMidOrders(){
     box.innerHTML += `
       <div class="orderCard">
         <div class="orderText">
+          <div class="orderVendor">${i.vendor}</div>
           <span class="orderStrong">${i.period}</span><br>
           품명 ${i.name} | 규격 ${i.spec} | 발주량 ${i.qty}
         </div>
