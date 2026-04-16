@@ -9,34 +9,27 @@ body{
   margin:0;
   font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
   background:#f7f8fa;
-  color:#111;
 }
 
-header.topbar{
+header{
   background:#fff;
   padding:22px;
   text-align:center;
-  font-size:34px;
+  font-size:32px;
   font-weight:800;
-  letter-spacing:6px;
   border-bottom:1px solid #eaeaea;
 }
 
-.container{
-  display:flex;
-  gap:20px;
-  padding:20px;
-}
-
+.container{display:flex;gap:20px;padding:20px;}
 .left{width:65%;}
 .right{width:35%;}
 
 .box{
   background:#fff;
-  margin:15px 0;
   padding:15px;
+  margin:15px 0;
   border-radius:12px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.04);
+  box-shadow:0 2px 8px rgba(0,0,0,0.05);
 }
 
 input,select{
@@ -48,150 +41,105 @@ input,select{
 
 button{
   padding:8px 12px;
+  border:none;
   background:#111;
   color:#fff;
-  border:none;
   border-radius:8px;
   cursor:pointer;
-  margin:3px;
 }
-
-button:hover{background:#333;}
 
 ul{list-style:none;padding:0;}
 li{padding:6px;border-bottom:1px solid #eee;}
 
 .alert{
   background:#fff5f5;
-  border-left:4px solid #ff4d4f;
+  border-left:4px solid red;
   padding:8px;
-  border-radius:6px;
-  margin:6px 0;
+  margin:5px 0;
 }
 
-#loginBox{
-  width:300px;
-  margin:100px auto;
-  padding:20px;
-  background:#fff;
-  border-radius:12px;
-  box-shadow:0 2px 10px rgba(0,0,0,0.05);
-  text-align:center;
-}
 </style>
 </head>
 
 <body>
 
-<header class="topbar">SUNGSIM</header>
-
-<!-- LOGIN -->
-<div class="box" id="loginBox">
-  <h3>로그인</h3>
-  <input id="id" placeholder="아이디">
-  <input id="pw" type="password" placeholder="비밀번호">
-  <button onclick="login()">로그인</button>
-</div>
-
-<!-- APP -->
-<div id="app" style="display:none;">
-<button onclick="logout()">로그아웃</button>
+<header>SUNGSIM ERP</header>
 
 <div class="container">
 
 <!-- LEFT -->
 <div class="left">
 
-  <div class="box">
-    <h3>🏥 병원 필터</h3>
-    <select id="viewHospital" onchange="render()">
-      <option value="all">전체</option>
-    </select>
-  </div>
+<div class="box">
+  <h3>🏥 병원 필터</h3>
+  <select id="viewHospital" onchange="render()">
+    <option value="all">전체</option>
+  </select>
+</div>
 
-  <div class="box">
-    <h3>📦 재고 등록</h3>
-    <select id="hospital"></select>
-    <input id="name" placeholder="시약명">
-    <input id="qty" placeholder="수량">
-    <input id="exp" type="date">
-    <button onclick="addItem()">등록</button>
-  </div>
+<div class="box">
+  <h3>📦 재고 등록</h3>
+  <select id="hospital"></select>
+  <input id="name" placeholder="시약명">
+  <input id="qty" placeholder="수량">
+  <input id="exp" type="date">
+  <button onclick="addItem()">등록</button>
+</div>
 
-  <div class="box">
-    <h3>📥 대량 등록</h3>
-    <textarea id="bulkInput" rows="6" style="width:100%"></textarea>
-    <button onclick="bulkAdd()">일괄등록</button>
-  </div>
+<div class="box">
+  <h3>📥 대량 등록</h3>
+  <textarea id="bulkInput" rows="5" style="width:100%"></textarea>
+  <button onclick="bulkAdd()">일괄등록</button>
+</div>
 
-  <div class="box">
-    <h3>📋 재고 목록</h3>
-    <ul id="list"></ul>
-  </div>
+<div class="box">
+  <h3>📋 재고 목록</h3>
+  <ul id="list"></ul>
+</div>
 
-  <div class="box">
-    <h3>🚚 출고</h3>
-    <select id="outHospital"></select>
-    <input id="client" placeholder="거래처">
-    <input id="item" placeholder="시약명">
-    <input id="outQty" placeholder="수량">
-    <button onclick="addOut()">출고</button>
-  </div>
-
-  <div class="box">
-    <h3>📦 출고 목록</h3>
-    <ul id="outListEl"></ul>
-  </div>
-
-  <div class="box">
-    <h3>🚨 발주</h3>
-    <ul id="lowStock"></ul>
-  </div>
+<div class="box">
+  <h3>🚨 발주</h3>
+  <ul id="lowStock"></ul>
+</div>
 
 </div>
 
 <!-- RIGHT -->
 <div class="right">
 
-  <div class="box">
-    <h3>📌 미납 관리</h3>
+<div class="box">
+  <h3>📌 미납</h3>
 
-    <select id="b_hospital"></select>
-    <input id="b_name" placeholder="시약명">
-    <input id="b_qty" placeholder="수량">
-    <input id="b_exp" type="date">
-    <input id="b_reason" placeholder="사유">
-    <button onclick="addBacklog()">등록</button>
+  <select id="b_hospital"></select>
+  <input id="b_name" placeholder="시약명">
+  <input id="b_qty" placeholder="수량">
+  <input id="b_reason" placeholder="사유">
+  <button onclick="addBacklog()">등록</button>
 
-    <hr>
+  <hr>
 
-    <button onclick="exportCSV()">엑셀</button>
-    <button onclick="clearBacklog()">전체삭제</button>
+  <select id="filterHospital" onchange="renderBacklog()"></select>
+  <select id="filterMonth" onchange="renderBacklog()">
+    <option value="all">전체월</option>
+    <option value="1">1</option><option value="2">2</option>
+    <option value="3">3</option><option value="4">4</option>
+    <option value="5">5</option><option value="6">6</option>
+    <option value="7">7</option><option value="8">8</option>
+    <option value="9">9</option><option value="10">10</option>
+    <option value="11">11</option><option value="12">12</option>
+  </select>
 
-    <hr>
+  <div id="backlogList"></div>
+</div>
 
-    <select id="filterHospital" onchange="renderBacklog()"></select>
-    <select id="filterMonth" onchange="renderBacklog()">
-      <option value="all">전체월</option>
-      <option value="1">1</option><option value="2">2</option>
-      <option value="3">3</option><option value="4">4</option>
-      <option value="5">5</option><option value="6">6</option>
-      <option value="7">7</option><option value="8">8</option>
-      <option value="9">9</option><option value="10">10</option>
-      <option value="11">11</option><option value="12">12</option>
-    </select>
+<div class="box">
+  <h3>📅 월별 검색</h3>
 
-    <div id="backlogList"></div>
-  </div>
+  <select id="searchYear"></select>
+  <select id="searchMonth"></select>
+  <button onclick="searchMonth()">조회</button>
 
-  <div class="box">
-    <h3>📅 월별 발주 검색</h3>
-    <select id="searchYear"></select>
-    <select id="searchMonth"></select>
-    <button onclick="searchMonth()">조회</button>
-    <ul id="monthResult"></ul>
-  </div>
-
+  <ul id="monthResult"></ul>
 </div>
 
 </div>
@@ -199,43 +147,24 @@ li{padding:6px;border-bottom:1px solid #eee;}
 
 <script>
 
+/* ================= DATA ================= */
 let items=[];
-let outList=[];
 let backlog=[];
 
-/* LOGIN */
-function login(){
-  if(id.value==="admin" && pw.value==="1234"){
-    localStorage.setItem("login","1");
-    show();
-  }else alert("실패");
-}
-
-function logout(){
-  localStorage.removeItem("login");
-  location.reload();
-}
-
-function show(){
-  loginBox.style.display="none";
-  app.style.display="block";
-}
-
-/* INIT */
+/* ================= INIT ================= */
 window.onload=()=>{
-  if(localStorage.getItem("login")==="1") show();
 
   const h=["경주동국대병원","구미차병원"];
 
   h.forEach(v=>{
     hospital.innerHTML+=`<option>${v}</option>`;
-    outHospital.innerHTML+=`<option>${v}</option>`;
     b_hospital.innerHTML+=`<option>${v}</option>`;
     filterHospital.innerHTML+=`<option>${v}</option>`;
     viewHospital.innerHTML+=`<option value="${v}">${v}</option>`;
   });
 
   let now=new Date().getFullYear();
+
   for(let i=now;i>=now-5;i--)
     searchYear.innerHTML+=`<option>${i}</option>`;
 
@@ -243,8 +172,9 @@ window.onload=()=>{
     searchMonth.innerHTML+=`<option>${i}</option>`;
 };
 
-/* VALIDATION */
+/* ================= ADD ================= */
 function addItem(){
+
   if(!name.value||!qty.value||!exp.value){
     alert("필수 입력");
     return;
@@ -260,7 +190,24 @@ function addItem(){
   render();
 }
 
-/* RENDER */
+/* ================= BULK ================= */
+function bulkAdd(){
+
+  bulkInput.value.split("\n").forEach(n=>{
+    if(!n.trim()) return;
+
+    items.push({
+      hospital:hospital.value,
+      name:n.trim(),
+      qty:0,
+      exp:""
+    });
+  });
+
+  render();
+}
+
+/* ================= RENDER (핵심 통합) ================= */
 function render(){
 
   list.innerHTML="";
@@ -277,38 +224,23 @@ function render(){
     let diff=(new Date(i.exp)-new Date())/86400000;
     let status=diff<0?"❌":diff<7?"🔥":"✅";
 
-    if(i.qty<=10) lowStock.innerHTML+=`<li>${i.name} (${i.qty})</li>`;
+    if(i.qty<=10)
+      lowStock.innerHTML+=`<li>${i.name} (${i.qty})</li>`;
 
-    list.innerHTML+=`<li>${i.hospital} | ${i.name} | ${i.qty} | ${status}</li>`;
+    list.innerHTML+=
+    `<li>${i.hospital} | ${i.name} | ${i.qty} | ${status}</li>`;
   });
 
   renderBacklog();
 }
 
-/* BULK */
-function bulkAdd(){
-
-  bulkInput.value.split("\n").forEach(n=>{
-    if(n.trim()=="") return;
-
-    items.push({
-      hospital:hospital.value,
-      name:n.trim(),
-      qty:0,
-      exp:""
-    });
-  });
-
-  render();
-}
-
-/* BACKLOG */
+/* ================= BACKLOG ================= */
 function addBacklog(){
+
   backlog.push({
     hospital:b_hospital.value,
     name:b_name.value,
     qty:+b_qty.value,
-    exp:b_exp.value,
     reason:b_reason.value,
     date:new Date()
   });
@@ -326,6 +258,7 @@ function renderBacklog(){
   let group={};
 
   backlog.forEach(i=>{
+
     if(fh!="all"&&i.hospital!=fh) return;
 
     let m=new Date(i.date).getMonth()+1;
@@ -338,73 +271,32 @@ function renderBacklog(){
   });
 
   for(let k in group){
+
     backlogList.innerHTML+=`<h4>${k}</h4>`;
 
     group[k].forEach(i=>{
-      backlogList.innerHTML+=`
-        <div class="alert">
-          ${i.name} | ${i.qty} | ${i.reason}
-        </div>
-      `;
+      backlogList.innerHTML+=
+      `<div class="alert">${i.name} | ${i.qty} | ${i.reason}</div>`;
     });
   }
 }
 
-/* MONTH SEARCH */
+/* ================= MONTH SEARCH ================= */
 function searchMonth(){
 
   monthResult.innerHTML="";
 
   backlog.forEach(i=>{
     let d=new Date(i.date);
-    if(d.getFullYear()==searchYear.value &&
-       d.getMonth()+1==searchMonth.value){
-      monthResult.innerHTML+=`<li>${i.name} | ${i.qty}</li>`;
+
+    if(
+      d.getFullYear()==searchYear.value &&
+      d.getMonth()+1==searchMonth.value
+    ){
+      monthResult.innerHTML+=
+      `<li>${i.hospital} | ${i.name} | ${i.qty}</li>`;
     }
   });
-}
-
-/* OUT */
-function addOut(){
-  outList.push({
-    hospital:outHospital.value,
-    client:client.value,
-    item:item.value,
-    qty:+outQty.value,
-    date:new Date()
-  });
-
-  renderOut();
-}
-
-function renderOut(){
-  outListEl.innerHTML="";
-  outList.forEach(o=>{
-    outListEl.innerHTML+=`<li>${o.hospital} | ${o.item} | ${o.qty}</li>`;
-  });
-}
-
-/* CSV */
-function exportCSV(){
-  let csv="병원,시약,수량,사유\n";
-
-  backlog.forEach(i=>{
-    csv+=`${i.hospital},${i.name},${i.qty},${i.reason}\n`;
-  });
-
-  let blob=new Blob([csv],{type:"text/csv"});
-  let url=URL.createObjectURL(blob);
-
-  let a=document.createElement("a");
-  a.href=url;
-  a.download="backlog.csv";
-  a.click();
-}
-
-/* CLEAR */
-function clearBacklog(){
-  backlog=[];
-  renderBacklog();
 }
 
 </script>
