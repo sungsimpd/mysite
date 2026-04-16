@@ -8,25 +8,35 @@
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;
-  background:#eaf5ef;
+  background:#eef6f0;
 }
 
+/* HEADER */
 header{
   background:#fff;
   padding:18px;
   text-align:center;
-  font-size:28px;
+  font-size:26px;
   font-weight:800;
-  border-bottom:2px solid #cfe8d8;
+  border-bottom:2px solid #d6eadc;
 }
 
-/* FILTER */
+/* FILTER BAR */
 .topbar{
   display:flex;
-  gap:8px;
-  padding:10px 20px;
+  gap:10px;
+  padding:12px 20px;
   background:#f6fbf8;
-  border-bottom:1px solid #cfe8d8;
+  border-bottom:1px solid #d6eadc;
+  align-items:center;
+}
+
+select{
+  padding:6px 10px;
+  border:1px solid #cfe8d8;
+  border-radius:8px;
+  font-size:13px;
+  background:#fff;
 }
 
 /* LAYOUT */
@@ -36,13 +46,8 @@ header{
   padding:15px;
 }
 
-.left{
-  flex:2;
-}
-
-.right{
-  flex:1;
-}
+.left{ flex:2; }
+.right{ flex:1; }
 
 .box{
   background:#fff;
@@ -53,23 +58,24 @@ header{
 }
 
 input,select{
-  padding:6px;
+  padding:7px;
   margin:3px;
   border:1px solid #cfe8d8;
-  border-radius:6px;
+  border-radius:8px;
   font-size:13px;
 }
 
 button{
-  padding:5px 8px;
+  padding:6px 10px;
   background:#2f7d4e;
   color:#fff;
   border:none;
-  border-radius:6px;
+  border-radius:8px;
   cursor:pointer;
   font-size:12px;
 }
 
+/* TABLE */
 table{
   width:100%;
   border-collapse:collapse;
@@ -81,13 +87,17 @@ td,th{
   text-align:center;
 }
 
-/* RIGHT ALERT */
+td input{
+  width:90%;
+}
+
+/* ALERT */
 .alert{
   background:#f6fbf8;
   border:1px solid #cfe8d8;
   padding:8px;
   margin:5px 0;
-  border-radius:8px;
+  border-radius:10px;
   font-size:12px;
 }
 </style>
@@ -121,7 +131,6 @@ td,th{
 <!-- LEFT -->
 <div class="left">
 
-  <!-- INPUT -->
   <div class="box">
     <h3>📦 재고 등록</h3>
 
@@ -130,7 +139,7 @@ td,th{
       <option>경주동국대병원</option>
     </select>
 
-    <input id="name" placeholder="시약명">
+    <input id="reagentName" placeholder="시약명">
     <input id="qty" type="number" placeholder="수량">
 
     <input id="year" placeholder="YYYY" maxlength="4" style="width:70px;">
@@ -142,7 +151,6 @@ td,th{
     <button onclick="addItem()">등록</button>
   </div>
 
-  <!-- LIST -->
   <div class="box">
     <h3>📋 재고 목록</h3>
 
@@ -159,15 +167,15 @@ td,th{
       </thead>
       <tbody id="list"></tbody>
     </table>
-  </div>
 
+  </div>
 </div>
 
 <!-- RIGHT -->
 <div class="right">
 
   <div class="box">
-    <h3>⚠ 미납 / 병원 재고 관리</h3>
+    <h3>⚠ 미납 / 재고관리</h3>
 
     <select id="b_hospital">
       <option>구미차병원</option>
@@ -196,7 +204,7 @@ let backlog = [];
 let yearFilter = "all";
 let monthFilter = "all";
 
-/* LOAD */
+/* INIT */
 window.onload = () => {
   items = JSON.parse(localStorage.getItem("items") || "[]");
   backlog = JSON.parse(localStorage.getItem("backlog") || "[]");
@@ -214,28 +222,21 @@ function save(){
 
 /* FILTER */
 function applyFilter(){
-  yearFilter = yearFilterEl().value;
-  monthFilter = monthFilterEl().value;
+  yearFilter = document.getElementById("yearFilter").value;
+  monthFilter = document.getElementById("monthFilter").value;
   render();
 }
 
-function yearFilterEl(){ return document.getElementById("yearFilter"); }
-function monthFilterEl(){ return document.getElementById("monthFilter"); }
-
-/* YEAR INIT */
+/* YEAR FILTER */
 function initYearFilter(){
-
   let set = new Set();
 
   items.forEach(i=>{
-    let d = i.createdAt || i.exp;
-    if(d){
-      let y = d.split("-")[0];
-      if(y) set.add(y);
-    }
+    let y = (i.createdAt || "").split("-")[0];
+    if(y) set.add(y);
   });
 
-  const y = yearFilterEl();
+  const y = document.getElementById("yearFilter");
   y.innerHTML = `<option value="all">전체연도</option>`;
 
   [...set].sort((a,b)=>b-a).forEach(v=>{
@@ -243,84 +244,53 @@ function initYearFilter(){
   });
 }
 
-/* ADD ITEM */
+/* ADD */
 function addItem(){
 
-  const h=hospital.value;
-  const n=name.value;
-  const q=Number(qty.value);
-  const e=`${year.value}-${month.value}-${day.value}`;
-  const l=lot.value;
+  const h = document.getElementById("hospital").value;
+  const n = document.getElementById("reagentName").value.trim();
+  const q = Number(document.getElementById("qty").value);
+  const e = `${document.getElementById("year").value}-${document.getElementById("month").value}-${document.getElementById("day").value}`;
+  const l = document.getElementById("lot").value;
 
-  if(!n||!q){
+  if(!n || isNaN(q) || q <= 0){
     alert("필수입력");
     return;
   }
 
+  let id = Date.now();
+
   let createdAt = new Date().toISOString().split("T")[0];
 
-  let t = items.find(i =>
-    i.hospital===h &&
-    i.name===n &&
-    i.exp===e &&
-    i.lot===l
-  );
-
-  if(t) t.qty += q;
-  else items.push({hospital:h,name:n,qty:q,exp:e,lot:l,createdAt});
+  items.push({
+    id,
+    hospital:h,
+    name:n,
+    qty:q,
+    exp:e,
+    lot:l,
+    createdAt
+  });
 
   save();
   initYearFilter();
   render();
 }
 
-/* BACKLOG */
-function addBacklog(){
-
-  backlog.push({
-    hospital:b_hospital.value,
-    name:b_name.value,
-    qty:Number(b_qty.value),
-    lot:b_lot.value,
-    exp:b_exp.value
-  });
-
-  save();
-  renderBacklog();
-}
-
-/* DELETE BACKLOG */
-function delBacklog(i){
-  backlog.splice(i,1);
-  save();
-  renderBacklog();
-}
-
-/* RENDER BACKLOG */
-function renderBacklog(){
-
-  backlogList.innerHTML="";
-
-  backlog.forEach((b,i)=>{
-    backlogList.innerHTML += `
-      <div class="alert">
-        ${b.hospital} | ${b.name} | ${b.qty} | ${b.lot} | ${b.exp}
-        <button onclick="delBacklog(${i})">삭제</button>
-      </div>
-    `;
-  });
-}
-
 /* UPDATE */
-function update(i,key,val){
-  if(key==="qty") val=Number(val);
-  items[i][key]=val;
+function update(id,key,val){
+  let t = items.find(i=>i.id===id);
+  if(!t) return;
+
+  if(key==="qty") val = Number(val);
+
+  t[key] = val;
   save();
 }
 
 /* DELETE */
-function del(i){
-  items.splice(i,1);
+function del(id){
+  items = items.filter(i=>i.id!==id);
   save();
   render();
 }
@@ -328,31 +298,65 @@ function del(i){
 /* RENDER */
 function render(){
 
-  list.innerHTML="";
+  const tbody = document.getElementById("list");
+  tbody.innerHTML = "";
 
-  items.forEach((i,idx)=>{
+  items.forEach(i=>{
 
-    let [y,m,d] = (i.createdAt||"").split("-");
+    let y = (i.createdAt||"").split("-")[0];
+    let m = (i.createdAt||"").split("-")[1];
 
     if(yearFilter!=="all" && y!==yearFilter) return;
     if(monthFilter!=="all" && m!==monthFilter) return;
 
-    list.innerHTML += `
+    tbody.innerHTML += `
       <tr>
-
         <td>${i.hospital}</td>
 
-        <td><input value="${i.name}" onchange="update(${idx},'name',this.value)"></td>
+        <td><input value="${i.name}" onchange="update(${i.id},'name',this.value)"></td>
 
-        <td><input type="number" value="${i.qty}" onchange="update(${idx},'qty',this.value)"></td>
+        <td><input type="number" value="${i.qty}" onchange="update(${i.id},'qty',this.value)"></td>
 
         <td>${i.exp}</td>
 
-        <td><input value="${i.lot||''}" onchange="update(${idx},'lot',this.value)"></td>
+        <td><input value="${i.lot||''}" onchange="update(${i.id},'lot',this.value)"></td>
 
-        <td><button onclick="del(${idx})">삭제</button></td>
-
+        <td><button onclick="del(${i.id})">삭제</button></td>
       </tr>
+    `;
+  });
+}
+
+/* BACKLOG */
+function addBacklog(){
+  backlog.push({
+    hospital:document.getElementById("b_hospital").value,
+    name:document.getElementById("b_name").value,
+    qty:Number(document.getElementById("b_qty").value),
+    lot:document.getElementById("b_lot").value,
+    exp:document.getElementById("b_exp").value
+  });
+
+  save();
+  renderBacklog();
+}
+
+function delBacklog(i){
+  backlog.splice(i,1);
+  save();
+  renderBacklog();
+}
+
+function renderBacklog(){
+  const box = document.getElementById("backlogList");
+  box.innerHTML = "";
+
+  backlog.forEach((b,i)=>{
+    box.innerHTML += `
+      <div class="alert">
+        ${b.hospital} | ${b.name} | ${b.qty} | ${b.lot} | ${b.exp}
+        <button onclick="delBacklog(${i})">삭제</button>
+      </div>
     `;
   });
 }
