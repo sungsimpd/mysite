@@ -1277,18 +1277,24 @@ async function addMidOrder(){
     return;
   }
 
-  const { error } = await window.supabase
-    .from("mid_orders")
-    .insert([
-      { year, month, vendor, name, spec, qty }
-    ]);
+  try {
+    const { data, error } = await window.supabase
+      .from("mid_orders")
+      .insert([{ year, month, vendor, name, spec, qty }])
+      .select();
 
-  if(error){
-    alert("저장 실패: " + error.message);
-    return;
+    if(error){
+      alert("저장 실패\n" + JSON.stringify(error, null, 2));
+      console.log("SUPABASE ERROR:", error);
+      return;
+    }
+
+    alert("저장 완료");
+    console.log("SUPABASE INSERT OK:", data);
+  } catch (e) {
+    alert("실행 에러\n" + e.message);
+    console.log("JS ERROR:", e);
   }
-
-  alert("저장 완료");
 }
 
 function delMonthStartOrder(id){
