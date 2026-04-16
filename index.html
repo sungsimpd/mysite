@@ -302,6 +302,7 @@ header{
   font-size:12px;
   font-weight:800;
   box-shadow:none;
+  white-space:nowrap;
 }
 
 .hospitalTab.active{
@@ -328,7 +329,12 @@ header{
 }
 
 .left{ flex:3; min-width:0; }
-.right{ flex:2; min-width:340px; }
+.right{ flex:2; min-width:280px; }
+
+#compensationPage .pageGrid .left{ flex:4.6; }
+#compensationPage .pageGrid .right{ flex:1; min-width:220px; }
+#deliveryPage .pageGrid .left{ flex:5; }
+#deliveryPage .pageGrid .right{ flex:0.9; min-width:200px; }
 
 .box{
   background:var(--card);
@@ -741,7 +747,7 @@ td input, td select{
 
   <section id="compensationPage" class="pageSection">
     <div class="hospitalTabs" id="compensationHospitalTabs"></div>
-    <div class="pageGrid">
+    <div class="pageGrid compensationGrid">
       <div class="left">
         <div class="box">
           <div class="panelTitle">
@@ -838,7 +844,7 @@ td input, td select{
 
   <section id="deliveryPage" class="pageSection">
     <div class="hospitalTabs" id="deliveryHospitalTabs"></div>
-    <div class="pageGrid">
+    <div class="pageGrid deliveryGrid">
       <div class="left">
         <div class="box">
           <div class="panelTitle">
@@ -1133,13 +1139,28 @@ function formatDay(v){
 }
 
 function formatYmdString(v){
-  const parts = String(v || "").trim().split("-");
-  if(parts.length !== 3) return "";
-  const y = formatYear(parts[0]);
-  const m = formatMonth(parts[1]);
-  const d = formatDay(parts[2]);
-  if(y.length !== 4 || !m || !d) return "";
-  return `${y}-${m}-${d}`;
+  const raw = String(v || "").trim();
+  if(!raw) return "";
+
+  const digits = digitsOnly(raw);
+  if(digits.length === 8){
+    const y = formatYear(digits.slice(0, 4));
+    const m = formatMonth(digits.slice(4, 6));
+    const d = formatDay(digits.slice(6, 8));
+    if(y.length !== 4 || !m || !d) return "";
+    return `${y}-${m}-${d}`;
+  }
+
+  const parts = raw.split("-");
+  if(parts.length === 3){
+    const y = formatYear(parts[0]);
+    const m = formatMonth(parts[1]);
+    const d = formatDay(parts[2]);
+    if(y.length !== 4 || !m || !d) return "";
+    return `${y}-${m}-${d}`;
+  }
+
+  return "";
 }
 
 function formatDateInputParts(){
@@ -1361,7 +1382,15 @@ function bindInputFormatters(){
   if(bExp) bExp.addEventListener("blur", e => { e.target.value = formatYmdString(e.target.value); });
 
   const pDate = document.getElementById("p_date");
-  if(pDate) pDate.addEventListener("blur", e => { e.target.value = formatYmdString(e.target.value); });
+  if(pDate){
+    pDate.addEventListener("input", e => {
+      const digits = digitsOnly(e.target.value).slice(0, 8);
+      if(digits.length <= 4) e.target.value = digits;
+      else if(digits.length <= 6) e.target.value = `${digits.slice(0,4)}-${digits.slice(4)}`;
+      else e.target.value = `${digits.slice(0,4)}-${digits.slice(4,6)}-${digits.slice(6,8)}`;
+    });
+    pDate.addEventListener("blur", e => { e.target.value = formatYmdString(e.target.value); });
+  }
 }
 
 /* NAV */
@@ -1701,10 +1730,16 @@ function addPrepaid(){
   const name = normalizeUpper(document.getElementById("p_name").value);
   const qty = Number(document.getElementById("p_qty").value);
   const lot = normalizeUpper(document.getElementById("p_lot").value);
-  const date = formatYmdString(document.getElementById("p_date").value);
+  const rawDate = document.getElementById("p_date").value;
+  const date = rawDate ? formatYmdString(rawDate) : "";
 
-  if(!name || isNaN(qty) || qty <= 0 || !date){
+  if(!name || isNaN(qty) || qty <= 0){
     alert("선납 입력값을 확인해주세요.");
+    return;
+  }
+
+  if(rawDate && !date){
+    alert("날짜 형식을 확인해주세요. 예: 20260417 또는 2026-04-17");
     return;
   }
 
@@ -2011,7 +2046,7 @@ function renderPrepaid(){
   sorted.forEach(i => {
     tbody.innerHTML += `
       <tr>
-        <td>${escapeHtml(i.date)}</td>
+        <td>${escapeHtml(i.date || "-")}</td>
         <td>${escapeHtml(i.hospital)}</td>
         <td>${escapeHtml(i.name)}</td>
         <td>${i.qty}</td>
