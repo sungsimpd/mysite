@@ -4,11 +4,6 @@
 <meta charset="UTF-8">
 <title>SUNGSIM</title>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-
 <style>
 body{
   margin:0;
@@ -23,6 +18,7 @@ header{
   font-size:32px;
   font-weight:800;
   border-bottom:2px solid #cfe8d8;
+  letter-spacing:4px;
 }
 
 .container{display:flex;gap:20px;padding:20px;}
@@ -43,6 +39,7 @@ input,select,textarea{
   margin:5px;
   border:1px solid #cfe8d8;
   border-radius:8px;
+  outline:none;
 }
 
 button{
@@ -80,6 +77,16 @@ td,th{
   text-align:center;
 }
 
+#loginBox{
+  width:300px;
+  margin:120px auto;
+  padding:20px;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.08);
+  text-align:center;
+}
+
 #logoutBtn{
   position:fixed;
   bottom:20px;
@@ -91,18 +98,20 @@ td,th{
 <body>
 
 <header>SUNGSIM</header>
+
 <button id="logoutBtn" onclick="logout()">로그아웃</button>
 
 <!-- LOGIN -->
-<div class="box" id="loginBox">
+<div id="loginBox">
   <h3>로그인</h3>
-  <input id="id" placeholder="email">
-  <input id="pw" type="password" placeholder="password">
+  <input id="id" placeholder="ID">
+  <input id="pw" type="password" placeholder="PW">
   <button onclick="login()">로그인</button>
 </div>
 
 <!-- APP -->
 <div id="app" style="display:none;">
+
 <div class="container">
 
 <!-- LEFT -->
@@ -148,87 +157,80 @@ td,th{
 
 </div>
 </div>
+
 </div>
 
 <script>
 
-/* ===== FIREBASE CONFIG (여기만 수정) ===== */
-const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "YOUR_DOMAIN",
-  projectId: "YOUR_ID"
-};
-
-firebase.initializeApp(firebaseConfig);
-
-const db = firebase.firestore();
-const auth = firebase.auth();
-const col = db.collection("items");
-
-/* ===== STATE ===== */
-let items = [];
-let currentHospital = "구미차병원";
-
-/* ===== AUTH ===== */
-auth.onAuthStateChanged(user => {
-
-  if(!user){
-    loginBox.style.display="block";
-    app.style.display="none";
-    return;
-  }
-
-  loginBox.style.display="none";
-  app.style.display="block";
-
-  listenData();
-});
+/* ================= LOGIN ================= */
+const ADMIN_ID = "sungsim";
+const ADMIN_PW = "8658";
 
 function login(){
-  auth.signInWithEmailAndPassword(id.value, pw.value)
-    .catch(e=>alert(e.message));
+  if(id.value === ADMIN_ID && pw.value === ADMIN_PW){
+    localStorage.setItem("login","ok");
+    show();
+  }else{
+    alert("로그인 실패");
+  }
 }
 
 function logout(){
-  auth.signOut();
+  localStorage.removeItem("login");
+  location.reload();
 }
 
-/* ===== REALTIME ===== */
-function listenData(){
-
-  col.onSnapshot(snap=>{
-
-    items = [];
-
-    snap.forEach(doc=>{
-      items.push({id:doc.id, ...doc.data()});
-    });
-
-    render();
-  });
+function show(){
+  loginBox.style.display="none";
+  app.style.display="block";
 }
 
-/* ===== MERGE ===== */
+/* ================= STATE ================= */
+let items = [];
+let hospital = "구미차병원";
+
+/* ================= INIT ================= */
+window.onload = () => {
+
+  if(localStorage.getItem("login")==="ok"){
+    show();
+  }
+
+  load();
+  render();
+};
+
+/* ================= STORAGE ================= */
+function save(){
+  localStorage.setItem("items", JSON.stringify(items));
+}
+
+function load(){
+  items = JSON.parse(localStorage.getItem("items") || "[]");
+}
+
+/* ================= MERGE ================= */
 function mergeItem(n){
 
-  let found = items.find(i =>
-    i.hospital === currentHospital &&
+  let t = items.find(i =>
     i.name === n.name &&
     i.lot === n.lot &&
     i.exp === n.exp
   );
 
-  if(found){
-    col.doc(found.id).update({
-      qty: found.qty + Number(n.qty)
-    });
+  if(t){
+    t.qty += Number(n.qty);
   }else{
-    col.add({...n, hospital:currentHospital});
+    items.push({...n, hospital});
   }
+
+  save();
 }
 
-/* ===== ADD ===== */
+/* ================= ADD ================= */
 function addItem(){
+
+  if(!name.value || !qty.value) return alert("필수 입력");
 
   mergeItem({
     name:name.value,
@@ -236,21 +238,24 @@ function addItem(){
     exp:exp.value,
     lot:lot.value
   });
+
+  render();
 }
 
-/* ===== EDIT ===== */
-function editItem(id,key,value){
-  col.doc(id).update({
-    [key]: key==="qty" ? Number(value) : value
-  });
+/* ================= EDIT ================= */
+function editItem(i,key,val){
+  items[i][key] = key==="qty" ? Number(val) : val;
+  save();
 }
 
-/* ===== DELETE ===== */
-function deleteItem(id){
-  col.doc(id).delete();
+/* ================= DELETE ================= */
+function deleteItem(i){
+  items.splice(i,1);
+  save();
+  render();
 }
 
-/* ===== OUT ===== */
+/* ================= OUT ================= */
 function addOut(){
 
   let t = items.find(i => i.name === out_name.value);
@@ -261,35 +266,32 @@ function addOut(){
 
   if(t.qty < q) return alert("부족");
 
-  col.doc(t.id).update({
-    qty: t.qty - q
-  });
+  t.qty -= q;
+
+  save();
+  render();
 }
 
-/* ===== RENDER ===== */
+/* ================= RENDER ================= */
 function render(){
 
-  list.innerHTML="";
+  list.innerHTML = "";
 
-  items.forEach(i=>{
+  items.forEach((i,idx)=>{
 
     list.innerHTML += `
       <tr>
         <td>${i.hospital}</td>
 
-        <td><input value="${i.name}"
-          onchange="editItem('${i.id}','name',this.value)"></td>
+        <td><input value="${i.name}" onchange="editItem(${idx},'name',this.value)"></td>
 
-        <td><input value="${i.qty}"
-          onchange="editItem('${i.id}','qty',this.value)"></td>
+        <td><input value="${i.qty}" onchange="editItem(${idx},'qty',this.value)"></td>
 
-        <td><input type="date" value="${i.exp || ''}"
-          onchange="editItem('${i.id}','exp',this.value)"></td>
+        <td><input type="date" value="${i.exp||''}" onchange="editItem(${idx},'exp',this.value)"></td>
 
-        <td><input value="${i.lot || ''}"
-          onchange="editItem('${i.id}','lot',this.value)"></td>
+        <td><input value="${i.lot||''}" onchange="editItem(${idx},'lot',this.value)"></td>
 
-        <td><button onclick="deleteItem('${i.id}')">삭제</button></td>
+        <td><button onclick="deleteItem(${idx})">삭제</button></td>
       </tr>
     `;
   });
@@ -297,10 +299,10 @@ function render(){
   dash();
 }
 
-/* ===== DASHBOARD ===== */
+/* ================= DASH ================= */
 function dash(){
 
-  let m={};
+  let m = {};
 
   items.forEach(i=>{
     m[i.hospital]=(m[i.hospital]||0)+i.qty;
