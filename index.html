@@ -74,7 +74,7 @@ td,th{
 
 <header>SUNGSIM</header>
 
-<!-- ✔ FILTER -->
+<!-- ✔ CURRENT DATE FILTER -->
 <div class="topbar">
 
   <select id="yearFilter" onchange="applyFilter()">
@@ -180,14 +180,14 @@ function applyFilter(){
 function yearFilterEl(){ return document.getElementById("yearFilter"); }
 function monthFilterEl(){ return document.getElementById("monthFilter"); }
 
-/* INIT YEAR */
+/* INIT YEAR (createdAt 기준) */
 function initYearFilter(){
 
   let set = new Set();
 
   items.forEach(i=>{
-    if(i.exp){
-      set.add(i.exp.split("-")[0]);
+    if(i.createdAt){
+      set.add(i.createdAt.split("-")[0]);
     }
   });
 
@@ -206,13 +206,15 @@ function addItem(){
   const n=name.value;
   const q=Number(qty.value);
 
-  const e = `${year.value}-${month.value}-${day.value}`;
+  const e=`${year.value}-${month.value}-${day.value}`;
   const l=lot.value;
 
   if(!n||!q){
     alert("필수입력");
     return;
   }
+
+  const createdAt = new Date().toISOString().split("T")[0];
 
   let t = items.find(i =>
     i.hospital===h &&
@@ -222,7 +224,14 @@ function addItem(){
   );
 
   if(t) t.qty += q;
-  else items.push({hospital:h,name:n,qty:q,exp:e,lot:l});
+  else items.push({
+    hospital:h,
+    name:n,
+    qty:q,
+    exp:e,
+    lot:l,
+    createdAt
+  });
 
   save();
   initYearFilter();
@@ -262,14 +271,14 @@ function del(i){
   render();
 }
 
-/* RENDER */
+/* RENDER (createdAt 기준 필터) */
 function render(){
 
   list.innerHTML="";
 
   items.forEach((i,idx)=>{
 
-    let [y,m,d] = (i.exp||"---").split("-");
+    let [y,m,d] = (i.createdAt || "").split("-");
 
     if(yearFilter!=="all" && y!==yearFilter) return;
     if(monthFilter!=="all" && m!==monthFilter) return;
