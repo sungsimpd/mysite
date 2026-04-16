@@ -11,33 +11,65 @@
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;
-  background:#eef6f0;
+  background:linear-gradient(180deg,#edf7f0 0%, #f7fbf8 100%);
   color:#1f2d26;
 }
 
 /* HEADER */
 header{
   position:relative;
-  background:#fff;
-  padding:18px 20px;
-  text-align:center;
-  font-size:26px;
-  font-weight:800;
-  border-bottom:2px solid #d6eadc;
-  letter-spacing:0.5px;
+  background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid #d9ece0;
+  padding:22px 24px 20px;
+  box-shadow:0 4px 18px rgba(0,0,0,0.04);
+}
+
+.headerInner{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+}
+
+.logoWrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+}
+
+.logoTitle{
+  font-size:34px;
+  font-weight:900;
+  letter-spacing:1.8px;
+  line-height:1;
+  margin:0;
+  background:linear-gradient(90deg,#1f5f3b,#3f9a67);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.logoSub{
+  margin-top:6px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:2px;
+  color:#6e8b7a;
+  text-transform:uppercase;
 }
 
 #clockBox{
   position:absolute;
-  right:16px;
+  right:0;
   top:50%;
   transform:translateY(-50%);
   background:#f4fbf7;
   border:1px solid #cfe8d8;
-  padding:7px 12px;
+  padding:8px 13px;
   border-radius:999px;
   font-size:12px;
-  font-weight:700;
+  font-weight:800;
   color:#2f7d4e;
   box-shadow:0 2px 8px rgba(0,0,0,0.05);
   white-space:nowrap;
@@ -46,20 +78,21 @@ header{
 /* LAYOUT */
 .wrap{
   display:flex;
-  gap:15px;
-  padding:15px;
+  gap:16px;
+  padding:16px;
   align-items:flex-start;
 }
 
 .left{ flex:2; min-width:0; }
-.right{ flex:1; min-width:300px; }
+.right{ flex:1; min-width:320px; }
 
 .box{
   background:#fff;
   padding:16px;
   margin-bottom:14px;
-  border-radius:16px;
-  box-shadow:0 4px 14px rgba(0,0,0,0.06);
+  border-radius:18px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.06);
+  border:1px solid rgba(214,234,220,0.8);
 }
 
 .box h3{
@@ -127,10 +160,12 @@ button{
   cursor:pointer;
   font-size:12px;
   font-weight:700;
+  transition:0.18s ease;
 }
 
 button:hover{
-  opacity:0.92;
+  opacity:0.94;
+  transform:translateY(-1px);
 }
 
 .btnSub{
@@ -208,6 +243,23 @@ td input{
   margin:10px 0 0 0;
 }
 
+.panelTitle{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+
+.panelCount{
+  font-size:11px;
+  font-weight:800;
+  color:#5f7d6d;
+  background:#eef8f2;
+  border:1px solid #d5eadc;
+  border-radius:999px;
+  padding:5px 9px;
+}
+
 @media (max-width: 960px){
   .wrap{
     flex-direction:column;
@@ -215,15 +267,13 @@ td input{
   .right{
     min-width:0;
   }
+  .headerInner{
+    flex-direction:column;
+    gap:10px;
+  }
   #clockBox{
     position:static;
     transform:none;
-    display:inline-block;
-    margin-left:12px;
-    vertical-align:middle;
-  }
-  header{
-    text-align:left;
   }
 }
 </style>
@@ -232,8 +282,13 @@ td input{
 <body>
 
 <header>
-  SUNGSIM
-  <span id="clockBox"></span>
+  <div class="headerInner">
+    <div class="logoWrap">
+      <div class="logoTitle">SUNGSIM</div>
+      <div class="logoSub">Inventory Dashboard</div>
+    </div>
+    <span id="clockBox"></span>
+  </div>
 </header>
 
 <div class="wrap">
@@ -320,10 +375,39 @@ td input{
 
   </div>
 
-  <!-- 오른쪽 -->
   <div class="right">
+
+    <!-- 선납 -->
     <div class="box">
-      <h3>⚠ 미납 / 병원 재고 관리</h3>
+      <div class="panelTitle">
+        <h3 style="margin:0;">💳 날짜별 선납 목록</h3>
+        <span class="panelCount" id="prepaidCount">0건</span>
+      </div>
+
+      <p class="subTitle">선납 내역을 날짜 기준으로 입력하고 관리합니다.</p>
+
+      <div class="row">
+        <select id="p_hospital">
+          <option>구미차병원</option>
+          <option>경주동국대병원</option>
+        </select>
+
+        <input id="p_name" placeholder="시약명">
+        <input id="p_qty" type="number" placeholder="수량" min="1">
+        <input id="p_lot" placeholder="LOT">
+        <input id="p_date" placeholder="YYYY-MM-DD">
+        <button onclick="addPrepaid()">등록</button>
+      </div>
+
+      <div id="prepaidList"></div>
+    </div>
+
+    <!-- 미납 -->
+    <div class="box">
+      <div class="panelTitle">
+        <h3 style="margin:0;">⚠ 미납 / 병원 재고 관리</h3>
+        <span class="panelCount" id="backlogCount">0건</span>
+      </div>
 
       <div class="row">
         <select id="b_hospital">
@@ -340,6 +424,7 @@ td input{
 
       <div id="backlogList"></div>
     </div>
+
   </div>
 
 </div>
@@ -347,6 +432,7 @@ td input{
 <script>
 let items = [];
 let backlog = [];
+let prepaid = [];
 
 let yearFilter = "all";
 let monthFilter = "all";
@@ -358,7 +444,6 @@ function updateClock(){
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, "0");
   const d = String(now.getDate()).padStart(2, "0");
-
   const h = String(now.getHours()).padStart(2, "0");
   const mi = String(now.getMinutes()).padStart(2, "0");
   const s = String(now.getSeconds()).padStart(2, "0");
@@ -407,6 +492,16 @@ function formatDay(v){
   return String(n).padStart(2, "0");
 }
 
+function formatYmdString(v){
+  const parts = String(v || "").trim().split("-");
+  if(parts.length !== 3) return "";
+  const y = formatYear(parts[0]);
+  const m = formatMonth(parts[1]);
+  const d = formatDay(parts[2]);
+  if(y.length !== 4 || !m || !d) return "";
+  return `${y}-${m}-${d}`;
+}
+
 function formatDateInputParts(){
   const yearEl = document.getElementById("year");
   const monthEl = document.getElementById("month");
@@ -431,11 +526,13 @@ function itemKey(obj){
 function save(){
   localStorage.setItem("items", JSON.stringify(items));
   localStorage.setItem("backlog", JSON.stringify(backlog));
+  localStorage.setItem("prepaid", JSON.stringify(prepaid));
 }
 
 function load(){
   items = JSON.parse(localStorage.getItem("items") || "[]");
   backlog = JSON.parse(localStorage.getItem("backlog") || "[]");
+  prepaid = JSON.parse(localStorage.getItem("prepaid") || "[]");
 }
 
 /* ---------------- INPUT AUTO FORMAT ---------------- */
@@ -444,6 +541,8 @@ function bindInputFormatters(){
   const lot = document.getElementById("lot");
   const bName = document.getElementById("b_name");
   const bLot = document.getElementById("b_lot");
+  const pName = document.getElementById("p_name");
+  const pLot = document.getElementById("p_lot");
 
   reagentName.addEventListener("input", e => {
     e.target.value = normalizeUpper(e.target.value);
@@ -458,6 +557,14 @@ function bindInputFormatters(){
   });
 
   bLot.addEventListener("input", e => {
+    e.target.value = normalizeUpper(e.target.value);
+  });
+
+  pName.addEventListener("input", e => {
+    e.target.value = normalizeUpper(e.target.value);
+  });
+
+  pLot.addEventListener("input", e => {
     e.target.value = normalizeUpper(e.target.value);
   });
 
@@ -480,13 +587,17 @@ function bindInputFormatters(){
   monthEl.addEventListener("blur", formatDateInputParts);
   dayEl.addEventListener("blur", formatDateInputParts);
   yearEl.addEventListener("blur", formatDateInputParts);
+
+  document.getElementById("b_exp").addEventListener("blur", e => {
+    e.target.value = formatYmdString(e.target.value);
+  });
+
+  document.getElementById("p_date").addEventListener("blur", e => {
+    e.target.value = formatYmdString(e.target.value);
+  });
 }
 
 /* ---------------- MONTH ROLLOVER ---------------- */
-/*
-  월이 바뀌면 직전 월 재고를 현재 월로 1회 이월.
-  이미 현재 월에 같은 재고가 있으면 중복 생성 안 하고 수량만 합산.
-*/
 function checkMonthRollover(){
   const current = getCurrentPeriod();
   const savedPeriod = localStorage.getItem("currentPeriod");
@@ -646,6 +757,7 @@ function refreshList(){
   initYearFilter();
   render();
   renderBacklog();
+  renderPrepaid();
 }
 
 /* ---------------- RENDER LIST ---------------- */
@@ -690,20 +802,83 @@ function render(){
   });
 }
 
+/* ---------------- PREPAID ---------------- */
+function addPrepaid(){
+  const hospital = document.getElementById("p_hospital").value;
+  const name = normalizeUpper(document.getElementById("p_name").value);
+  const qty = Number(document.getElementById("p_qty").value);
+  const lot = normalizeUpper(document.getElementById("p_lot").value);
+  const date = formatYmdString(document.getElementById("p_date").value);
+
+  if(!name || isNaN(qty) || qty <= 0 || !date){
+    alert("선납 입력값을 확인해주세요.");
+    return;
+  }
+
+  prepaid.push({
+    id: makeId(),
+    hospital,
+    name,
+    qty,
+    lot,
+    date
+  });
+
+  save();
+  renderPrepaid();
+
+  document.getElementById("p_name").value = "";
+  document.getElementById("p_qty").value = "";
+  document.getElementById("p_lot").value = "";
+  document.getElementById("p_date").value = "";
+}
+
+function delPrepaid(id){
+  prepaid = prepaid.filter(p => p.id !== id);
+  save();
+  renderPrepaid();
+}
+
+function renderPrepaid(){
+  const box = document.getElementById("prepaidList");
+  const countEl = document.getElementById("prepaidCount");
+  box.innerHTML = "";
+
+  const sorted = [...prepaid].sort((a,b) => b.date.localeCompare(a.date));
+  countEl.textContent = `${sorted.length}건`;
+
+  if(sorted.length === 0){
+    box.innerHTML = `<div class="emptyRow" style="padding:14px 4px;">등록된 선납 내역이 없습니다.</div>`;
+    return;
+  }
+
+  sorted.forEach(p => {
+    box.innerHTML += `
+      <div class="alert">
+        <div class="alertText">
+          <strong>${p.date}</strong><br>
+          ${p.hospital} | ${p.name} | 수량 ${p.qty} | LOT ${p.lot || "-"}
+        </div>
+        <button class="btnSub" onclick="delPrepaid(${p.id})">삭제</button>
+      </div>
+    `;
+  });
+}
+
 /* ---------------- BACKLOG ---------------- */
 function addBacklog(){
   const hospital = document.getElementById("b_hospital").value;
   const name = normalizeUpper(document.getElementById("b_name").value);
   const qty = Number(document.getElementById("b_qty").value);
   const lot = normalizeUpper(document.getElementById("b_lot").value);
-  const exp = document.getElementById("b_exp").value.trim();
+  const exp = formatYmdString(document.getElementById("b_exp").value);
 
   if(!name || isNaN(qty) || qty <= 0){
     alert("미납 / 병원 재고 관리 입력값을 확인해주세요.");
     return;
   }
 
-  backlog.push({ hospital, name, qty, lot, exp });
+  backlog.push({ id: makeId(), hospital, name, qty, lot, exp });
   save();
   renderBacklog();
 
@@ -713,29 +888,32 @@ function addBacklog(){
   document.getElementById("b_exp").value = "";
 }
 
-function delBacklog(index){
-  backlog.splice(index, 1);
+function delBacklog(id){
+  backlog = backlog.filter(b => b.id !== id);
   save();
   renderBacklog();
 }
 
 function renderBacklog(){
   const box = document.getElementById("backlogList");
+  const countEl = document.getElementById("backlogCount");
   box.innerHTML = "";
+
+  countEl.textContent = `${backlog.length}건`;
 
   if(backlog.length === 0){
     box.innerHTML = `<div class="emptyRow" style="padding:14px 4px;">등록된 항목이 없습니다.</div>`;
     return;
   }
 
-  backlog.forEach((b, i) => {
+  backlog.forEach(b => {
     box.innerHTML += `
       <div class="alert">
         <div class="alertText">
           <strong>${b.hospital}</strong><br>
           ${b.name} | 수량 ${b.qty} | LOT ${b.lot || "-"} | ${b.exp || "-"}
         </div>
-        <button class="btnSub" onclick="delBacklog(${i})">삭제</button>
+        <button class="btnSub" onclick="delBacklog(${b.id})">삭제</button>
       </div>
     `;
   });
@@ -753,6 +931,7 @@ window.onload = () => {
   monthFilter = document.getElementById("monthFilter").value;
 
   render();
+  renderPrepaid();
   renderBacklog();
 };
 </script>
