@@ -79,7 +79,6 @@ td,th{
 <!-- LEFT -->
 <div class="left">
 
-<!-- 재고 -->
 <div class="box">
   <h3>📦 재고 등록</h3>
 
@@ -91,7 +90,6 @@ td,th{
   <input id="name" placeholder="시약명">
   <input id="qty" type="number" placeholder="수량">
 
-  <!-- ✔ 날짜 UX 개선 -->
   <input id="year" placeholder="YYYY" maxlength="4" style="width:70px;">
   <input id="month" placeholder="MM" maxlength="2" style="width:50px;">
   <input id="day" placeholder="DD" maxlength="2" style="width:50px;">
@@ -101,7 +99,6 @@ td,th{
   <button onclick="addItem()">등록</button>
 </div>
 
-<!-- 출고 -->
 <div class="box">
   <h3>🚚 출고</h3>
   <input id="out_name" placeholder="시약명">
@@ -109,7 +106,6 @@ td,th{
   <button onclick="outItem()">출고</button>
 </div>
 
-<!-- 재고 -->
 <div class="box">
   <h3>📋 재고 목록</h3>
 
@@ -135,7 +131,7 @@ td,th{
 
 <div class="box">
   <h3>⚠ 미납 시약 관리</h3>
-  <div id="backlog"></div>
+  <div id="backlogList"></div>
 </div>
 
 </div>
@@ -162,27 +158,30 @@ function save(){
   localStorage.setItem("backlog",JSON.stringify(backlog));
 }
 
-/* ================= DATE FORMAT ================= */
-function makeDate(){
-  const y=year.value;
-  const m=month.value;
-  const d=day.value;
+/* ================= SAFE VALUE ================= */
+function val(id){
+  return (document.getElementById(id).value || "").trim();
+}
 
-  if(!y || !m || !d){
-    return "";
-  }
+/* ================= DATE ================= */
+function makeDate(){
+  const y=val("year");
+  const m=val("month");
+  const d=val("day");
+
+  if(!y || !m || !d) return "";
 
   return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
 }
 
-/* ================= ADD ITEM ================= */
+/* ================= ADD ================= */
 function addItem(){
 
-  const h=hospital.value;
-  const n=name.value;
-  const q=Number(qty.value);
+  const h=val("hospital");
+  const n=val("name");
+  const q=Number(val("qty"));
   const e=makeDate();
-  const l=lot.value;
+  const l=val("lot");
 
   if(!n || !q){
     alert("필수입력 누락");
@@ -209,8 +208,8 @@ function addItem(){
 /* ================= OUT ================= */
 function outItem(){
 
-  const n=out_name.value;
-  const q=Number(out_qty.value);
+  const n=val("out_name");
+  const q=Number(val("out_qty"));
 
   let t=items.find(i=>i.name===n);
 
@@ -250,13 +249,13 @@ function render(){
   });
 }
 
-/* ================= BACKLOG (복구된 핵심 기능) ================= */
-function addBacklogAuto(item){
+/* ================= BACKLOG FIX ================= */
+function addBacklog(name,qty,reason){
 
   backlog.push({
-    name:item.name,
-    qty:item.qty,
-    reason:"자동 미납"
+    name,
+    qty,
+    reason
   });
 
   save();
@@ -265,10 +264,10 @@ function addBacklogAuto(item){
 
 function renderBacklog(){
 
-  backlog.innerHTML="";
+  backlogList.innerHTML="";
 
   backlog.forEach(b=>{
-    backlog.innerHTML+=`
+    backlogList.innerHTML+=`
       <div class="alert">
         ${b.name} / ${b.qty} / ${b.reason}
       </div>
