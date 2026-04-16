@@ -1660,16 +1660,15 @@ window.onload = () => {
   });
 };
 </script>
-<script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-const supabase = createClient(
+<script>
+const supabase = window.supabase.createClient(
   "https://hlejsfcacydactvovmgz.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsZWpzZmNhY3lkYWN0d292bWd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDM1OTUsImV4cCI6MjA5MTg3OTU5NX0.a2VKjU8Hrp6wYcngXig0_8052pW6jtcmtlo5T9vHBV"
+  "sb_publishable_YnpuoNJGwCcdGZygNkFufg__spXXtK8"
 );
 
-window.supabase = supabase;
-
+window.db = supabase;
 </script>
 </body>
 </html>
