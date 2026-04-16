@@ -35,7 +35,6 @@ body{
     radial-gradient(circle at 20% 100%, rgba(255,141,197,0.10), transparent 24%),
     linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 48%, var(--bg3) 78%, var(--bg4) 100%);
   color:var(--text);
-  min-height:100vh;
 }
 
 /* LOGIN */
@@ -535,7 +534,7 @@ td input{
           <input id="ms_name" placeholder="품명">
           <input id="ms_spec" placeholder="규격">
           <input id="ms_qty" type="number" placeholder="발주량" min="1">
-          <button id="msSubmitBtn" onclick="addMonthStartOrder()">등록</button>
+          <button onclick="addMonthStartOrder()">등록</button>
         </div>
 
         <div class="tableWrap">
@@ -581,7 +580,7 @@ td input{
           <input id="mid_name" placeholder="품명">
           <input id="mid_spec" placeholder="규격">
           <input id="mid_qty" type="number" placeholder="발주량" min="1">
-          <button id="midSubmitBtn" onclick="addMidOrder()">등록</button>
+          <button onclick="addMidOrder()">등록</button>
         </div>
 
         <div class="tableWrap">
@@ -773,7 +772,6 @@ let midOrders = [];
 
 let yearFilter = "all";
 let monthFilter = "all";
-
 let monthStartLockedContext = JSON.parse(localStorage.getItem("monthStartLockedContext") || "null");
 let midLockedContext = JSON.parse(localStorage.getItem("midLockedContext") || "null");
 
@@ -1048,83 +1046,6 @@ function applyFilter(){
   render();
 }
 
-/* INVENTORY */
-function addItem(){
-  formatDateInputParts();
-
-  const h = document.getElementById("hospital").value;
-  const n = normalizeUpper(document.getElementById("reagentName").value);
-  const q = Number(document.getElementById("qty").value);
-  const y = formatYear(document.getElementById("year").value);
-  const m = formatMonth(document.getElementById("month").value);
-  const d = formatDay(document.getElementById("day").value);
-  const l = normalizeUpper(document.getElementById("lot").value);
-
-  if(!n || isNaN(q) || q <= 0 || y.length !== 4 || !m || !d){
-    alert("필수입력을 정확히 입력해주세요.");
-    return;
-  }
-
-  const e = `${y}-${m}-${d}`;
-  const createdAt = new Date().toISOString().split("T")[0];
-  const period = getCurrentPeriod();
-
-  const target = items.find(i =>
-    i.period === period &&
-    i.hospital === h &&
-    normalizeUpper(i.name) === n &&
-    i.exp === e &&
-    normalizeUpper(i.lot) === l
-  );
-
-  if(target){
-    target.qty = Number(target.qty || 0) + q;
-  }else{
-    items.push({
-      id: makeId(),
-      hospital: h,
-      name: n,
-      qty: q,
-      exp: e,
-      lot: l,
-      createdAt,
-      period
-    });
-  }
-
-  save();
-  initYearFilter();
-  render();
-
-  document.getElementById("reagentName").value = "";
-  document.getElementById("qty").value = "";
-  document.getElementById("year").value = "";
-  document.getElementById("month").value = "";
-  document.getElementById("day").value = "";
-  document.getElementById("lot").value = "";
-}
-
-function update(id, key, value){
-  const item = items.find(i => i.id === id);
-  if(!item) return;
-
-  if(key === "name" || key === "lot") value = normalizeUpper(value);
-  if(key === "qty"){
-    value = Number(value);
-    if(isNaN(value) || value < 0) value = 0;
-  }
-
-  item[key] = value;
-  save();
-  render();
-}
-
-function del(id){
-  items = items.filter(i => i.id !== id);
-  save();
-  render();
-}
-
 /* LOCK STATE */
 function renderMonthStartLockState(){
   const badge = document.getElementById("msLockBadge");
@@ -1222,6 +1143,83 @@ function unlockMidContext(){
   renderMidOrders();
 }
 
+/* INVENTORY */
+function addItem(){
+  formatDateInputParts();
+
+  const h = document.getElementById("hospital").value;
+  const n = normalizeUpper(document.getElementById("reagentName").value);
+  const q = Number(document.getElementById("qty").value);
+  const y = formatYear(document.getElementById("year").value);
+  const m = formatMonth(document.getElementById("month").value);
+  const d = formatDay(document.getElementById("day").value);
+  const l = normalizeUpper(document.getElementById("lot").value);
+
+  if(!n || isNaN(q) || q <= 0 || y.length !== 4 || !m || !d){
+    alert("필수입력을 정확히 입력해주세요.");
+    return;
+  }
+
+  const e = `${y}-${m}-${d}`;
+  const createdAt = new Date().toISOString().split("T")[0];
+  const period = getCurrentPeriod();
+
+  const target = items.find(i =>
+    i.period === period &&
+    i.hospital === h &&
+    normalizeUpper(i.name) === n &&
+    i.exp === e &&
+    normalizeUpper(i.lot) === l
+  );
+
+  if(target){
+    target.qty = Number(target.qty || 0) + q;
+  }else{
+    items.push({
+      id: makeId(),
+      hospital: h,
+      name: n,
+      qty: q,
+      exp: e,
+      lot: l,
+      createdAt,
+      period
+    });
+  }
+
+  save();
+  initYearFilter();
+  render();
+
+  document.getElementById("reagentName").value = "";
+  document.getElementById("qty").value = "";
+  document.getElementById("year").value = "";
+  document.getElementById("month").value = "";
+  document.getElementById("day").value = "";
+  document.getElementById("lot").value = "";
+}
+
+function update(id, key, value){
+  const item = items.find(i => i.id === id);
+  if(!item) return;
+
+  if(key === "name" || key === "lot") value = normalizeUpper(value);
+  if(key === "qty"){
+    value = Number(value);
+    if(isNaN(value) || value < 0) value = 0;
+  }
+
+  item[key] = value;
+  save();
+  render();
+}
+
+function del(id){
+  items = items.filter(i => i.id !== id);
+  save();
+  render();
+}
+
 /* ORDERS */
 function addMonthStartOrder(){
   let year = "";
@@ -1261,40 +1259,46 @@ function addMonthStartOrder(){
   document.getElementById("ms_spec").value = "";
   document.getElementById("ms_qty").value = "";
 }
-async function addMidOrder(){
-  alert("함수실행됨");
 
-  const year = document.getElementById("mid_year").value;
-  const month = document.getElementById("mid_month").value;
-  const vendor = document.getElementById("mid_vendor").value;
-  const name = document.getElementById("mid_name").value;
-  const spec = document.getElementById("mid_spec").value;
+function addMidOrder(){
+  let year = "";
+  let month = "";
+  let vendor = "";
+
+  if(midLockedContext){
+    year = midLockedContext.year;
+    month = midLockedContext.month;
+    vendor = midLockedContext.vendor;
+  }else{
+    year = formatYear(document.getElementById("mid_year").value);
+    month = formatMonth(document.getElementById("mid_month").value);
+    vendor = document.getElementById("mid_vendor").value;
+    document.getElementById("mid_year").value = year;
+    document.getElementById("mid_month").value = month;
+  }
+
+  const name = normalizeUpper(document.getElementById("mid_name").value);
+  const spec = normalizeUpper(document.getElementById("mid_spec").value);
   const qty = Number(document.getElementById("mid_qty").value);
 
-  if(!year || !month || !vendor || !name || !spec || !qty){
-    alert("입력값 확인");
+  if(!year || !month || !vendor || !name || !spec || isNaN(qty) || qty <= 0){
+    alert("중간발주 입력값을 확인해주세요.");
     return;
   }
 
-  try {
-    const { data, error } = await window.supabase
-      .from("mid_orders")
-      .insert([{ year, month, vendor, name, spec, qty }])
-      .select();
+  midOrders.push({
+    id: makeId(), year, month, vendor, name, spec, qty
+  });
 
-    if(error){
-      alert("저장 실패: " + error.message);
-      console.log(error);
-      return;
-    }
+  save();
+  initYearFilter();
+  renderMidOrders();
 
-    alert("저장 완료");
-    console.log(data);
-  } catch(e){
-    alert("실행 에러: " + e.message);
-    console.log(e);
-  }
+  document.getElementById("mid_name").value = "";
+  document.getElementById("mid_spec").value = "";
+  document.getElementById("mid_qty").value = "";
 }
+
 function delMonthStartOrder(id){
   monthStartOrders = monthStartOrders.filter(i => i.id !== id);
   save();
@@ -1660,15 +1664,6 @@ window.onload = () => {
   });
 };
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script>
-const supabase = window.supabase.createClient(
-  "https://hlejsfcacydactvovmgz.supabase.co",
-  "sb_publishable_YnpuoNJGwCcdGZygNkFufg__spXXtK8"
-);
-
-window.db = supabase;
-</script>
 </body>
 </html>
