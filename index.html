@@ -1262,39 +1262,43 @@ function addMonthStartOrder(){
   document.getElementById("ms_qty").value = "";
 }
 
-async function addMidOrder(){
-  alert("함수실행됨");
+function addMidOrder(){
+  let year = "";
+  let month = "";
+  let vendor = "";
 
-  const year = document.getElementById("mid_year").value;
-  const month = document.getElementById("mid_month").value;
-  const vendor = document.getElementById("mid_vendor").value;
-  const name = document.getElementById("mid_name").value;
-  const spec = document.getElementById("mid_spec").value;
+  if(midLockedContext){
+    year = midLockedContext.year;
+    month = midLockedContext.month;
+    vendor = midLockedContext.vendor;
+  }else{
+    year = formatYear(document.getElementById("mid_year").value);
+    month = formatMonth(document.getElementById("mid_month").value);
+    vendor = document.getElementById("mid_vendor").value;
+    document.getElementById("mid_year").value = year;
+    document.getElementById("mid_month").value = month;
+  }
+
+  const name = normalizeUpper(document.getElementById("mid_name").value);
+  const spec = normalizeUpper(document.getElementById("mid_spec").value);
   const qty = Number(document.getElementById("mid_qty").value);
 
-  if(!year || !month || !vendor || !name || !spec || !qty){
-    alert("입력값 확인");
+  if(!year || !month || !vendor || !name || !spec || isNaN(qty) || qty <= 0){
+    alert("중간발주 입력값을 확인해주세요.");
     return;
   }
 
-  try {
-    const { data, error } = await window.supabase
-      .from("mid_orders")
-      .insert([{ year, month, vendor, name, spec, qty }])
-      .select();
+  midOrders.push({
+    id: makeId(), year, month, vendor, name, spec, qty
+  });
 
-    if(error){
-      alert("저장 실패\n" + JSON.stringify(error, null, 2));
-      console.log("SUPABASE ERROR:", error);
-      return;
-    }
+  save();
+  initYearFilter();
+  renderMidOrders();
 
-    alert("저장 완료");
-    console.log("SUPABASE INSERT OK:", data);
-  } catch (e) {
-    alert("실행 에러\n" + e.message);
-    console.log("JS ERROR:", e);
-  }
+  document.getElementById("mid_name").value = "";
+  document.getElementById("mid_spec").value = "";
+  document.getElementById("mid_qty").value = "";
 }
 
 function delMonthStartOrder(id){
@@ -1666,12 +1670,12 @@ window.onload = () => {
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 const supabase = createClient(
-  "http://hlejsfcacydactwovmgz.supabase.co",
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsZWpzZmNhY3lkYWN0d292bWd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDM1OTUsImV4cCI6MjA5MTg3OTU5NX0.a2VKjU8Hrp6wYcngXig0_8052pW6jtcmtlo5T9vHBV8"
+  "https://hlejsfcacydactwovmgz.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhsZWpzZmNhY3lkYWN0d292bWd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMDM1OTUsImV4cCI6MjA5MTg3OTU5NX0.a2VKjU8Hrp6wYcngXig0_8052pW6jtcmtlo5T9vHBV8
+  "
 );
 
 window.supabase = supabase;
 </script>
-
 </body>
 </html>
