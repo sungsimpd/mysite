@@ -20,9 +20,7 @@ header{
   border-bottom:2px solid #cfe8d8;
 }
 
-.container{display:flex;gap:20px;padding:20px;}
-.left{width:65%;}
-.right{width:35%;}
+.container{padding:20px;}
 
 .box{
   background:#fff;
@@ -33,19 +31,21 @@ header{
 }
 
 input,select{
-  padding:7px;
-  margin:4px;
+  padding:6px;
+  margin:3px;
   border:1px solid #cfe8d8;
-  border-radius:8px;
+  border-radius:6px;
+  font-size:13px;
 }
 
 button{
-  padding:6px 10px;
+  padding:5px 8px;
   background:#2f7d4e;
   color:#fff;
   border:none;
-  border-radius:8px;
+  border-radius:6px;
   cursor:pointer;
+  font-size:12px;
 }
 
 button:hover{background:#256642;}
@@ -58,14 +58,11 @@ table{
 td,th{
   border-bottom:1px solid #eee;
   padding:6px;
+  text-align:center;
 }
 
-.alert{
-  background:#fff;
-  border-left:4px solid #2f7d4e;
-  padding:8px;
-  margin:5px 0;
-  border-radius:8px;
+.filterBar button{
+  margin-right:5px;
 }
 </style>
 </head>
@@ -76,9 +73,14 @@ td,th{
 
 <div class="container">
 
-<!-- LEFT -->
-<div class="left">
+<!-- FILTER -->
+<div class="box filterBar">
+  <button onclick="setFilter('all')">전체</button>
+  <button onclick="setFilter('구미차병원')">구미차병원</button>
+  <button onclick="setFilter('경주동국대병원')">경주동국대병원</button>
+</div>
 
+<!-- INPUT -->
 <div class="box">
   <h3>📦 재고 등록</h3>
 
@@ -99,6 +101,7 @@ td,th{
   <button onclick="addItem()">등록</button>
 </div>
 
+<!-- OUT -->
 <div class="box">
   <h3>🚚 출고</h3>
   <input id="out_name" placeholder="시약명">
@@ -106,6 +109,7 @@ td,th{
   <button onclick="outItem()">출고</button>
 </div>
 
+<!-- TABLE -->
 <div class="box">
   <h3>📋 재고 목록</h3>
 
@@ -117,7 +121,7 @@ td,th{
         <th>수량</th>
         <th>유효기간</th>
         <th>LOT</th>
-        <th>삭제</th>
+        <th>관리</th>
       </tr>
     </thead>
     <tbody id="list"></tbody>
@@ -126,153 +130,158 @@ td,th{
 
 </div>
 
-<!-- RIGHT -->
-<div class="right">
-
-<div class="box">
-  <h3>⚠ 미납 시약 관리</h3>
-  <div id="backlogList"></div>
-</div>
-
-</div>
-
-</div>
-
 <script>
 
-/* ================= STATE ================= */
-let items=[];
-let backlog=[];
+let items = [];
+let filter = "all";
+let editMode = null;
 
-/* ================= INIT ================= */
-window.onload=()=>{
-  items=JSON.parse(localStorage.getItem("items")||"[]");
-  backlog=JSON.parse(localStorage.getItem("backlog")||"[]");
+/* LOAD */
+window.onload = () => {
+  items = JSON.parse(localStorage.getItem("items") || "[]");
   render();
-  renderBacklog();
 };
 
-/* ================= SAVE ================= */
+/* SAVE */
 function save(){
-  localStorage.setItem("items",JSON.stringify(items));
-  localStorage.setItem("backlog",JSON.stringify(backlog));
+  localStorage.setItem("items", JSON.stringify(items));
 }
 
-/* ================= SAFE VALUE ================= */
-function val(id){
-  return (document.getElementById(id).value || "").trim();
+/* FILTER */
+function setFilter(v){
+  filter = v;
+  render();
 }
 
-/* ================= DATE ================= */
+/* DATE */
 function makeDate(){
-  const y=val("year");
-  const m=val("month");
-  const d=val("day");
-
-  if(!y || !m || !d) return "";
-
+  const y=year.value;
+  const m=month.value;
+  const d=day.value;
+  if(!y||!m||!d) return "";
   return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
 }
 
-/* ================= ADD ================= */
+/* ADD */
 function addItem(){
 
-  const h=val("hospital");
-  const n=val("name");
-  const q=Number(val("qty"));
+  const h=hospital.value;
+  const n=name.value;
+  const q=Number(qty.value);
   const e=makeDate();
-  const l=val("lot");
+  const l=lot.value;
 
-  if(!n || !q){
-    alert("필수입력 누락");
+  if(!n||!q){
+    alert("필수입력");
     return;
   }
 
-  let t=items.find(i =>
+  let t = items.find(i =>
     i.hospital===h &&
     i.name===n &&
     i.exp===e &&
     i.lot===l
   );
 
-  if(t){
-    t.qty+=q;
-  }else{
-    items.push({hospital:h,name:n,qty:q,exp:e,lot:l});
-  }
+  if(t) t.qty += q;
+  else items.push({hospital:h,name:n,qty:q,exp:e,lot:l});
 
   save();
   render();
 }
 
-/* ================= OUT ================= */
+/* OUT */
 function outItem(){
 
-  const n=val("out_name");
-  const q=Number(val("out_qty"));
+  const n=out_name.value;
+  const q=Number(out_qty.value);
 
   let t=items.find(i=>i.name===n);
 
-  if(!t) return alert("재고 없음");
+  if(!t) return alert("재고없음");
   if(t.qty<q) return alert("부족");
 
-  t.qty-=q;
-
+  t.qty -= q;
   save();
   render();
 }
 
-/* ================= DELETE ================= */
+/* UPDATE */
+function update(i,key,val){
+
+  if(key==="qty") val=Number(val);
+
+  items[i][key]=val;
+  save();
+}
+
+/* DELETE */
 function del(i){
   items.splice(i,1);
   save();
   render();
 }
 
-/* ================= RENDER ================= */
+/* RENDER */
 function render(){
 
   list.innerHTML="";
 
   items.forEach((i,idx)=>{
 
-    list.innerHTML+=`
+    if(filter!=="all" && i.hospital!==filter) return;
+
+    let [y,m,d] = (i.exp||"---").split("-");
+
+    list.innerHTML += `
       <tr>
-        <td>${i.hospital}</td>
-        <td>${i.name}</td>
-        <td>${i.qty}</td>
-        <td>${i.exp}</td>
-        <td>${i.lot}</td>
-        <td><button onclick="del(${idx})">삭제</button></td>
+
+        <td>
+          <select onchange="update(${idx},'hospital',this.value)">
+            <option ${i.hospital==="구미차병원"?"selected":""}>구미차병원</option>
+            <option ${i.hospital==="경주동국대병원"?"selected":""}>경주동국대병원</option>
+          </select>
+        </td>
+
+        <td>
+          <input value="${i.name}" onchange="update(${idx},'name',this.value)">
+        </td>
+
+        <td>
+          <input type="number" value="${i.qty}" onchange="update(${idx},'qty',this.value)">
+        </td>
+
+        <td>
+          <input style="width:60px" value="${y||''}" onchange="updateExp(${idx},'y',this.value)">
+          <input style="width:40px" value="${m||''}" onchange="updateExp(${idx},'m',this.value)">
+          <input style="width:40px" value="${d||''}" onchange="updateExp(${idx},'d',this.value)">
+        </td>
+
+        <td>
+          <input value="${i.lot||''}" onchange="update(${idx},'lot',this.value)">
+        </td>
+
+        <td>
+          <button onclick="del(${idx})">삭제</button>
+        </td>
+
       </tr>
     `;
   });
 }
 
-/* ================= BACKLOG FIX ================= */
-function addBacklog(name,qty,reason){
+/* EXP UPDATE */
+function updateExp(i,type,val){
 
-  backlog.push({
-    name,
-    qty,
-    reason
-  });
+  let [y,m,d] = (items[i].exp||"---").split("-");
+
+  if(type==="y") y=val;
+  if(type==="m") m=val;
+  if(type==="d") d=val;
+
+  items[i].exp = `${y||'0000'}-${m||'01'}-${d||'01'}`;
 
   save();
-  renderBacklog();
-}
-
-function renderBacklog(){
-
-  backlogList.innerHTML="";
-
-  backlog.forEach(b=>{
-    backlogList.innerHTML+=`
-      <div class="alert">
-        ${b.name} / ${b.qty} / ${b.reason}
-      </div>
-    `;
-  });
 }
 
 </script>
