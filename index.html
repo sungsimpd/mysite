@@ -260,6 +260,28 @@ td input{
   padding:5px 9px;
 }
 
+.orderCard{
+  background:#f8fcf9;
+  border:1px solid #dceee3;
+  border-radius:14px;
+  padding:10px 12px;
+  margin:8px 0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+}
+
+.orderText{
+  line-height:1.6;
+  font-size:12px;
+}
+
+.orderStrong{
+  font-weight:800;
+  color:#244d37;
+}
+
 @media (max-width: 960px){
   .wrap{
     flex-direction:column;
@@ -294,6 +316,42 @@ td input{
 <div class="wrap">
 
   <div class="left">
+
+    <!-- 월초발주 -->
+    <div class="box">
+      <div class="panelTitle">
+        <h3 style="margin:0;">🗂 월초발주 목록 등록</h3>
+        <span class="panelCount" id="monthStartOrderCount">0건</span>
+      </div>
+      <p class="subTitle">조회 연/월 기준의 월초발주 내역입니다.</p>
+
+      <div class="row">
+        <input id="ms_name" placeholder="품명">
+        <input id="ms_spec" placeholder="규격">
+        <input id="ms_qty" type="number" placeholder="발주량" min="1">
+        <button onclick="addMonthStartOrder()">등록</button>
+      </div>
+
+      <div id="monthStartOrderList"></div>
+    </div>
+
+    <!-- 중간발주 -->
+    <div class="box">
+      <div class="panelTitle">
+        <h3 style="margin:0;">🗂 중간발주 목록 등록</h3>
+        <span class="panelCount" id="midOrderCount">0건</span>
+      </div>
+      <p class="subTitle">조회 연/월 기준의 중간발주 내역입니다.</p>
+
+      <div class="row">
+        <input id="mid_name" placeholder="품명">
+        <input id="mid_spec" placeholder="규격">
+        <input id="mid_qty" type="number" placeholder="발주량" min="1">
+        <button onclick="addMidOrder()">등록</button>
+      </div>
+
+      <div id="midOrderList"></div>
+    </div>
 
     <!-- 재고 등록 -->
     <div class="box">
@@ -433,6 +491,8 @@ td input{
 let items = [];
 let backlog = [];
 let prepaid = [];
+let monthStartOrders = [];
+let midOrders = [];
 
 let yearFilter = "all";
 let monthFilter = "all";
@@ -440,14 +500,12 @@ let monthFilter = "all";
 /* ---------------- CLOCK ---------------- */
 function updateClock(){
   const now = new Date();
-
   const y = now.getFullYear();
   const m = String(now.getMonth() + 1).padStart(2, "0");
   const d = String(now.getDate()).padStart(2, "0");
   const h = String(now.getHours()).padStart(2, "0");
   const mi = String(now.getMinutes()).padStart(2, "0");
   const s = String(now.getSeconds()).padStart(2, "0");
-
   document.getElementById("clockBox").textContent = `${y}-${m}-${d} ${h}:${mi}:${s}`;
 }
 setInterval(updateClock, 1000);
@@ -456,6 +514,15 @@ setInterval(updateClock, 1000);
 function getCurrentPeriod(){
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function getSelectedPeriod(){
+  const now = new Date();
+  const y = document.getElementById("yearFilter")?.value || "all";
+  const m = document.getElementById("monthFilter")?.value || "all";
+  const finalYear = y === "all" ? String(now.getFullYear()) : y;
+  const finalMonth = m === "all" ? String(now.getMonth() + 1).padStart(2, "0") : m;
+  return `${finalYear}-${finalMonth}`;
 }
 
 function makeId(){
@@ -527,45 +594,28 @@ function save(){
   localStorage.setItem("items", JSON.stringify(items));
   localStorage.setItem("backlog", JSON.stringify(backlog));
   localStorage.setItem("prepaid", JSON.stringify(prepaid));
+  localStorage.setItem("monthStartOrders", JSON.stringify(monthStartOrders));
+  localStorage.setItem("midOrders", JSON.stringify(midOrders));
 }
 
 function load(){
   items = JSON.parse(localStorage.getItem("items") || "[]");
   backlog = JSON.parse(localStorage.getItem("backlog") || "[]");
   prepaid = JSON.parse(localStorage.getItem("prepaid") || "[]");
+  monthStartOrders = JSON.parse(localStorage.getItem("monthStartOrders") || "[]");
+  midOrders = JSON.parse(localStorage.getItem("midOrders") || "[]");
 }
 
 /* ---------------- INPUT AUTO FORMAT ---------------- */
 function bindInputFormatters(){
-  const reagentName = document.getElementById("reagentName");
-  const lot = document.getElementById("lot");
-  const bName = document.getElementById("b_name");
-  const bLot = document.getElementById("b_lot");
-  const pName = document.getElementById("p_name");
-  const pLot = document.getElementById("p_lot");
-
-  reagentName.addEventListener("input", e => {
-    e.target.value = normalizeUpper(e.target.value);
-  });
-
-  lot.addEventListener("input", e => {
-    e.target.value = normalizeUpper(e.target.value);
-  });
-
-  bName.addEventListener("input", e => {
-    e.target.value = normalizeUpper(e.target.value);
-  });
-
-  bLot.addEventListener("input", e => {
-    e.target.value = normalizeUpper(e.target.value);
-  });
-
-  pName.addEventListener("input", e => {
-    e.target.value = normalizeUpper(e.target.value);
-  });
-
-  pLot.addEventListener("input", e => {
-    e.target.value = normalizeUpper(e.target.value);
+  const ids = ["reagentName","lot","b_name","b_lot","p_name","p_lot","ms_name","ms_spec","mid_name","mid_spec"];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if(el){
+      el.addEventListener("input", e => {
+        e.target.value = normalizeUpper(e.target.value);
+      });
+    }
   });
 
   const yearEl = document.getElementById("year");
@@ -648,6 +698,16 @@ function initYearFilter(){
     if(ey) set.add(ey);
   });
 
+  monthStartOrders.forEach(i => {
+    const py = (i.period || "").split("-")[0];
+    if(py) set.add(py);
+  });
+
+  midOrders.forEach(i => {
+    const py = (i.period || "").split("-")[0];
+    if(py) set.add(py);
+  });
+
   const currentValue = yearFilterEl.value || "all";
 
   yearFilterEl.innerHTML = `<option value="all">전체연도</option>`;
@@ -666,6 +726,8 @@ function applyFilter(){
   yearFilter = document.getElementById("yearFilter").value;
   monthFilter = document.getElementById("monthFilter").value;
   render();
+  renderMonthStartOrders();
+  renderMidOrders();
 }
 
 /* ---------------- ADD ITEM ---------------- */
@@ -750,12 +812,144 @@ function del(id){
   render();
 }
 
+/* ---------------- MONTH START ORDER ---------------- */
+function addMonthStartOrder(){
+  const name = normalizeUpper(document.getElementById("ms_name").value);
+  const spec = normalizeUpper(document.getElementById("ms_spec").value);
+  const qty = Number(document.getElementById("ms_qty").value);
+  const period = getSelectedPeriod();
+
+  if(!name || !spec || isNaN(qty) || qty <= 0){
+    alert("월초발주 입력값을 확인해주세요.");
+    return;
+  }
+
+  monthStartOrders.push({
+    id: makeId(),
+    period,
+    name,
+    spec,
+    qty
+  });
+
+  save();
+  renderMonthStartOrders();
+  initYearFilter();
+
+  document.getElementById("ms_name").value = "";
+  document.getElementById("ms_spec").value = "";
+  document.getElementById("ms_qty").value = "";
+}
+
+function delMonthStartOrder(id){
+  monthStartOrders = monthStartOrders.filter(i => i.id !== id);
+  save();
+  renderMonthStartOrders();
+}
+
+function renderMonthStartOrders(){
+  const box = document.getElementById("monthStartOrderList");
+  const countEl = document.getElementById("monthStartOrderCount");
+  const period = getSelectedPeriod();
+
+  const filtered = monthStartOrders
+    .filter(i => i.period === period)
+    .sort((a,b) => b.id - a.id);
+
+  countEl.textContent = `${filtered.length}건`;
+  box.innerHTML = "";
+
+  if(filtered.length === 0){
+    box.innerHTML = `<div class="emptyRow" style="padding:14px 4px;">선택한 월의 월초발주 내역이 없습니다.</div>`;
+    return;
+  }
+
+  filtered.forEach(i => {
+    box.innerHTML += `
+      <div class="orderCard">
+        <div class="orderText">
+          <span class="orderStrong">${i.period}</span><br>
+          품명 ${i.name} | 규격 ${i.spec} | 발주량 ${i.qty}
+        </div>
+        <button class="btnSub" onclick="delMonthStartOrder(${i.id})">삭제</button>
+      </div>
+    `;
+  });
+}
+
+/* ---------------- MID ORDER ---------------- */
+function addMidOrder(){
+  const name = normalizeUpper(document.getElementById("mid_name").value);
+  const spec = normalizeUpper(document.getElementById("mid_spec").value);
+  const qty = Number(document.getElementById("mid_qty").value);
+  const period = getSelectedPeriod();
+
+  if(!name || !spec || isNaN(qty) || qty <= 0){
+    alert("중간발주 입력값을 확인해주세요.");
+    return;
+  }
+
+  midOrders.push({
+    id: makeId(),
+    period,
+    name,
+    spec,
+    qty
+  });
+
+  save();
+  renderMidOrders();
+  initYearFilter();
+
+  document.getElementById("mid_name").value = "";
+  document.getElementById("mid_spec").value = "";
+  document.getElementById("mid_qty").value = "";
+}
+
+function delMidOrder(id){
+  midOrders = midOrders.filter(i => i.id !== id);
+  save();
+  renderMidOrders();
+}
+
+function renderMidOrders(){
+  const box = document.getElementById("midOrderList");
+  const countEl = document.getElementById("midOrderCount");
+  const period = getSelectedPeriod();
+
+  const filtered = midOrders
+    .filter(i => i.period === period)
+    .sort((a,b) => b.id - a.id);
+
+  countEl.textContent = `${filtered.length}건`;
+  box.innerHTML = "";
+
+  if(filtered.length === 0){
+    box.innerHTML = `<div class="emptyRow" style="padding:14px 4px;">선택한 월의 중간발주 내역이 없습니다.</div>`;
+    return;
+  }
+
+  filtered.forEach(i => {
+    box.innerHTML += `
+      <div class="orderCard">
+        <div class="orderText">
+          <span class="orderStrong">${i.period}</span><br>
+          품명 ${i.name} | 규격 ${i.spec} | 발주량 ${i.qty}
+        </div>
+        <button class="btnSub" onclick="delMidOrder(${i.id})">삭제</button>
+      </div>
+    `;
+  });
+}
+
 /* ---------------- REFRESH ---------------- */
 function refreshList(){
   load();
   checkMonthRollover();
   initYearFilter();
   render();
+  renderMonthStartOrders();
+  renderMidOrders();
   renderBacklog();
   renderPrepaid();
 }
@@ -930,6 +1124,8 @@ window.onload = () => {
   yearFilter = document.getElementById("yearFilter").value;
   monthFilter = document.getElementById("monthFilter").value;
 
+  renderMonthStartOrders();
+  renderMidOrders();
   render();
   renderPrepaid();
   renderBacklog();
