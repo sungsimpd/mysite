@@ -34,12 +34,11 @@ header{
   border:1px solid #d9eee1;
 }
 
-input,select,textarea{
+input,select{
   padding:8px;
   margin:5px;
   border:1px solid #cfe8d8;
   border-radius:8px;
-  outline:none;
 }
 
 button{
@@ -104,8 +103,8 @@ td,th{
 <!-- LOGIN -->
 <div id="loginBox">
   <h3>로그인</h3>
-  <input id="id" placeholder="ID">
-  <input id="pw" type="password" placeholder="PW">
+  <input id="login_id" placeholder="ID">
+  <input id="login_pw" type="password" placeholder="PW">
   <button onclick="login()">로그인</button>
 </div>
 
@@ -114,15 +113,14 @@ td,th{
 
 <div class="container">
 
-<!-- LEFT -->
 <div class="left">
 
 <div class="box">
   <h3>📦 재고 등록</h3>
-  <input id="name" placeholder="시약명">
-  <input id="qty" type="number" placeholder="수량">
-  <input id="exp" type="date">
-  <input id="lot" placeholder="LOT">
+  <input id="item_name" placeholder="시약명">
+  <input id="item_qty" type="number" placeholder="수량">
+  <input id="item_exp" type="date">
+  <input id="item_lot" placeholder="LOT">
   <button onclick="addItem()">등록</button>
 </div>
 
@@ -134,7 +132,7 @@ td,th{
 </div>
 
 <div class="box">
-  <h3>📊 병원 대시보드</h3>
+  <h3>📊 대시보드</h3>
   <div id="dashboard" class="dashboard"></div>
 </div>
 
@@ -156,20 +154,24 @@ td,th{
 </div>
 
 </div>
-</div>
 
+</div>
 </div>
 
 <script>
 
-/* ================= LOGIN ================= */
+/* ================= LOGIN (고정) ================= */
 const ADMIN_ID = "sungsim";
 const ADMIN_PW = "8658";
 
 function login(){
-  if(id.value === ADMIN_ID && pw.value === ADMIN_PW){
+
+  const id = document.getElementById("login_id").value;
+  const pw = document.getElementById("login_pw").value;
+
+  if(id === ADMIN_ID && pw === ADMIN_PW){
     localStorage.setItem("login","ok");
-    show();
+    showApp();
   }else{
     alert("로그인 실패");
   }
@@ -180,20 +182,19 @@ function logout(){
   location.reload();
 }
 
-function show(){
-  loginBox.style.display="none";
-  app.style.display="block";
+function showApp(){
+  document.getElementById("loginBox").style.display="none";
+  document.getElementById("app").style.display="block";
 }
 
-/* ================= STATE ================= */
+/* ================= DATA ================= */
 let items = [];
 let hospital = "구미차병원";
 
 /* ================= INIT ================= */
 window.onload = () => {
-
   if(localStorage.getItem("login")==="ok"){
-    show();
+    showApp();
   }
 
   load();
@@ -230,13 +231,21 @@ function mergeItem(n){
 /* ================= ADD ================= */
 function addItem(){
 
-  if(!name.value || !qty.value) return alert("필수 입력");
+  const name = document.getElementById("item_name").value;
+  const qty = document.getElementById("item_qty").value;
+  const exp = document.getElementById("item_exp").value;
+  const lot = document.getElementById("item_lot").value;
+
+  if(!name || !qty){
+    alert("필수 입력");
+    return;
+  }
 
   mergeItem({
-    name:name.value,
-    qty:Number(qty.value),
-    exp:exp.value,
-    lot:lot.value
+    name,
+    qty:Number(qty),
+    exp,
+    lot
   });
 
   render();
@@ -258,15 +267,16 @@ function deleteItem(i){
 /* ================= OUT ================= */
 function addOut(){
 
-  let t = items.find(i => i.name === out_name.value);
+  const name = document.getElementById("out_name").value;
+  const qty = Number(document.getElementById("out_qty").value);
+
+  let t = items.find(i => i.name === name);
 
   if(!t) return alert("재고 없음");
 
-  let q = Number(out_qty.value);
+  if(t.qty < qty) return alert("부족");
 
-  if(t.qty < q) return alert("부족");
-
-  t.qty -= q;
+  t.qty -= qty;
 
   save();
   render();
