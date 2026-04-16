@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <title>SUNGSIM</title>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+
 <style>
 body{
   margin:0;
@@ -48,6 +53,7 @@ button{
   border-radius:8px;
   cursor:pointer;
 }
+
 button:hover{background:#256642;}
 
 table{
@@ -55,10 +61,9 @@ table{
   border-collapse:collapse;
 }
 
-th,td{
+td,th{
   border-bottom:1px solid #eee;
   padding:6px;
-  text-align:left;
 }
 
 .dashboard{
@@ -79,7 +84,6 @@ th,td{
   position:fixed;
   bottom:20px;
   right:20px;
-  background:#2f7d4e;
 }
 </style>
 </head>
@@ -89,15 +93,20 @@ th,td{
 <header>SUNGSIM</header>
 <button id="logoutBtn" onclick="logout()">로그아웃</button>
 
+<!-- LOGIN -->
+<div class="box" id="loginBox">
+  <h3>로그인</h3>
+  <input id="id" placeholder="email">
+  <input id="pw" type="password" placeholder="password">
+  <button onclick="login()">로그인</button>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;">
 <div class="container">
 
 <!-- LEFT -->
 <div class="left">
-
-<div class="box">
-  <h3>🏥 병원</h3>
-  <select id="hospital"></select>
-</div>
 
 <div class="box">
   <h3>📦 재고 등록</h3>
@@ -109,12 +118,6 @@ th,td{
 </div>
 
 <div class="box">
-  <h3>📥 대량등록</h3>
-  <textarea id="bulkInput" rows="5" style="width:100%"></textarea>
-  <button onclick="bulkAdd()">등록</button>
-</div>
-
-<div class="box">
   <h3>🚚 출고</h3>
   <input id="out_name" placeholder="시약명">
   <input id="out_qty" type="number" placeholder="수량">
@@ -122,7 +125,7 @@ th,td{
 </div>
 
 <div class="box">
-  <h3>📊 병원별 대시보드</h3>
+  <h3>📊 병원 대시보드</h3>
   <div id="dashboard" class="dashboard"></div>
 </div>
 
@@ -145,125 +148,153 @@ th,td{
 
 </div>
 </div>
+</div>
 
 <script>
 
-/* ===== DATA ===== */
-let items = [];
-
-/* ===== LOAD ===== */
-window.onload = () => {
-  loadData();
-
-  hospital.innerHTML = `
-    <option>구미차병원</option>
-    <option>경주동국대병원</option>
-  `;
-
-  render();
+/* ===== FIREBASE CONFIG (여기만 수정) ===== */
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  projectId: "YOUR_ID"
 };
 
-/* ===== SAVE ===== */
-function saveData(){
-  localStorage.setItem("sungsim", JSON.stringify(items));
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+const auth = firebase.auth();
+const col = db.collection("items");
+
+/* ===== STATE ===== */
+let items = [];
+let currentHospital = "구미차병원";
+
+/* ===== AUTH ===== */
+auth.onAuthStateChanged(user => {
+
+  if(!user){
+    loginBox.style.display="block";
+    app.style.display="none";
+    return;
+  }
+
+  loginBox.style.display="none";
+  app.style.display="block";
+
+  listenData();
+});
+
+function login(){
+  auth.signInWithEmailAndPassword(id.value, pw.value)
+    .catch(e=>alert(e.message));
 }
 
-function loadData(){
-  items = JSON.parse(localStorage.getItem("sungsim") || "[]");
+function logout(){
+  auth.signOut();
 }
 
-/* ===== MERGE (중복 합산 핵심) ===== */
+/* ===== REALTIME ===== */
+function listenData(){
+
+  col.onSnapshot(snap=>{
+
+    items = [];
+
+    snap.forEach(doc=>{
+      items.push({id:doc.id, ...doc.data()});
+    });
+
+    render();
+  });
+}
+
+/* ===== MERGE ===== */
 function mergeItem(n){
 
-  let f = items.find(i =>
-    i.hospital === n.hospital &&
+  let found = items.find(i =>
+    i.hospital === currentHospital &&
     i.name === n.name &&
     i.lot === n.lot &&
     i.exp === n.exp
   );
 
-  if(f){
-    f.qty += Number(n.qty);
+  if(found){
+    col.doc(found.id).update({
+      qty: found.qty + Number(n.qty)
+    });
   }else{
-    items.push(n);
+    col.add({...n, hospital:currentHospital});
   }
 }
 
 /* ===== ADD ===== */
 function addItem(){
 
-  if(!name.value || !qty.value){
-    alert("필수 입력");
-    return;
-  }
-
   mergeItem({
-    hospital:hospital.value,
     name:name.value,
     qty:Number(qty.value),
-    exp:exp.value || "",
-    lot:lot.value || ""
+    exp:exp.value,
+    lot:lot.value
   });
-
-  saveData();
-  render();
-}
-
-/* ===== BULK ===== */
-function bulkAdd(){
-
-  bulkInput.value.split("\n").forEach(line=>{
-
-    let p=line.split("|");
-    if(!p[0]) return;
-
-    mergeItem({
-      hospital:hospital.value,
-      name:(p[0]||"").trim(),
-      qty:Number(p[1]||0),
-      exp:(p[2]||"").trim(),
-      lot:(p[3]||"").trim()
-    });
-  });
-
-  saveData();
-  render();
-}
-
-/* ===== OUT (자동 차감) ===== */
-function addOut(){
-
-  let target = items.find(i => i.name === out_name.value);
-
-  if(!target){
-    alert("재고 없음");
-    return;
-  }
-
-  let q = Number(out_qty.value);
-
-  if(target.qty < q){
-    alert("재고 부족");
-    return;
-  }
-
-  target.qty -= q;
-
-  saveData();
-  render();
 }
 
 /* ===== EDIT ===== */
-function edit(i,k,v){
-  items[i][k] = (k==="qty") ? Number(v) : v;
-  saveData();
+function editItem(id,key,value){
+  col.doc(id).update({
+    [key]: key==="qty" ? Number(value) : value
+  });
 }
 
 /* ===== DELETE ===== */
-function del(i){
-  items.splice(i,1);
-  saveData();
-  render();
+function deleteItem(id){
+  col.doc(id).delete();
+}
+
+/* ===== OUT ===== */
+function addOut(){
+
+  let t = items.find(i => i.name === out_name.value);
+
+  if(!t) return alert("재고 없음");
+
+  let q = Number(out_qty.value);
+
+  if(t.qty < q) return alert("부족");
+
+  col.doc(t.id).update({
+    qty: t.qty - q
+  });
+}
+
+/* ===== RENDER ===== */
+function render(){
+
+  list.innerHTML="";
+
+  items.forEach(i=>{
+
+    list.innerHTML += `
+      <tr>
+        <td>${i.hospital}</td>
+
+        <td><input value="${i.name}"
+          onchange="editItem('${i.id}','name',this.value)"></td>
+
+        <td><input value="${i.qty}"
+          onchange="editItem('${i.id}','qty',this.value)"></td>
+
+        <td><input type="date" value="${i.exp || ''}"
+          onchange="editItem('${i.id}','exp',this.value)"></td>
+
+        <td><input value="${i.lot || ''}"
+          onchange="editItem('${i.id}','lot',this.value)"></td>
+
+        <td><button onclick="deleteItem('${i.id}')">삭제</button></td>
+      </tr>
+    `;
+  });
+
+  dash();
 }
 
 /* ===== DASHBOARD ===== */
@@ -272,51 +303,19 @@ function dash(){
   let m={};
 
   items.forEach(i=>{
-    m[i.hospital] = (m[i.hospital]||0)+i.qty;
+    m[i.hospital]=(m[i.hospital]||0)+i.qty;
   });
 
   dashboard.innerHTML="";
 
   for(let k in m){
-    dashboard.innerHTML+=`
+    dashboard.innerHTML += `
       <div class="card">
         <h3>${k}</h3>
         <div>${m[k]} EA</div>
       </div>
     `;
   }
-}
-
-/* ===== RENDER ===== */
-function render(){
-
-  list.innerHTML="";
-
-  items.forEach((i,idx)=>{
-
-    list.innerHTML+=`
-      <tr>
-        <td>${i.hospital}</td>
-
-        <td><input value="${i.name}" onchange="edit(${idx},'name',this.value)"></td>
-
-        <td><input value="${i.qty}" onchange="edit(${idx},'qty',this.value)"></td>
-
-        <td><input type="date" value="${i.exp}" onchange="edit(${idx},'exp',this.value)"></td>
-
-        <td><input value="${i.lot}" onchange="edit(${idx},'lot',this.value)"></td>
-
-        <td><button onclick="del(${idx})">삭제</button></td>
-      </tr>
-    `;
-  });
-
-  dash();
-}
-
-/* ===== LOGOUT ===== */
-function logout(){
-  location.reload();
 }
 
 </script>
