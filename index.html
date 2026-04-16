@@ -11,6 +11,7 @@
 :root{
   --bg1:#eef7f1;
   --bg2:#f8fbf9;
+  --bg3:#f3f7ff;
   --card:#ffffff;
   --line:#dceee3;
   --line2:#cfe8d8;
@@ -20,12 +21,17 @@
   --green-dark:#21593a;
   --mint:#eef8f2;
   --shadow:0 8px 24px rgba(0,0,0,0.05);
+  --shadow-soft:0 18px 42px rgba(23,48,35,0.08);
 }
 
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;
-  background:linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 100%);
+  background:
+    radial-gradient(circle at top left, rgba(63,160,109,0.10), transparent 30%),
+    radial-gradient(circle at top right, rgba(120,149,220,0.09), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(47,125,78,0.08), transparent 28%),
+    linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 60%, var(--bg3) 100%);
   color:var(--text);
 }
 
@@ -143,8 +149,8 @@ body{
 /* HEADER */
 header{
   position:relative;
-  background:rgba(255,255,255,0.94);
-  backdrop-filter:blur(10px);
+  background:rgba(255,255,255,0.90);
+  backdrop-filter:blur(12px);
   border-bottom:1px solid #d9ece0;
   padding:24px 24px 20px;
   box-shadow:0 4px 18px rgba(0,0,0,0.04);
@@ -223,11 +229,12 @@ header{
 .right{ flex:1; min-width:340px; }
 
 .box{
-  background:#fff;
+  background:rgba(255,255,255,0.90);
+  backdrop-filter:blur(10px);
   padding:16px;
   margin-bottom:14px;
   border-radius:18px;
-  box-shadow:var(--shadow);
+  box-shadow:var(--shadow-soft);
   border:1px solid rgba(214,234,220,0.8);
 }
 
@@ -337,6 +344,48 @@ button:hover{
   padding:5px 9px;
 }
 
+.midLockBar{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  margin-bottom:10px;
+  padding:10px;
+  background:linear-gradient(135deg,#f4fbf7 0%, #f7f9ff 100%);
+  border:1px solid #deeee3;
+  border-radius:12px;
+}
+
+.midLockLabel{
+  font-size:12px;
+  font-weight:800;
+  color:#557062;
+}
+
+.midLockBadge{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:800;
+  background:#ffffff;
+  color:#2f7d4e;
+  border:1px solid #d7eadf;
+}
+
+.groupHeader td{
+  background:#f4faf6 !important;
+  color:#355443;
+  font-size:11px;
+  font-weight:900;
+  text-align:left;
+  padding:9px 12px;
+  border-top:1px solid #dfeee5;
+  border-bottom:1px solid #dfeee5;
+  letter-spacing:0.2px;
+}
+
 /* TABLE */
 .tableWrap{
   overflow-x:auto;
@@ -353,7 +402,7 @@ table{
 
 thead th{
   background:#f6faf7;
-  font-size:12px;
+  font-size:11px;
   font-weight:800;
   color:#355443;
   border-bottom:1px solid #dfeee5;
@@ -361,9 +410,10 @@ thead th{
 
 td,th{
   border-bottom:1px solid #edf3ef;
-  padding:8px 6px;
+  padding:7px 6px;
   text-align:center;
   vertical-align:middle;
+  font-size:12px;
 }
 
 tbody tr:hover{
@@ -494,11 +544,18 @@ td input{
           <h3 style="margin:0;">🗂 중간발주 목록</h3>
           <span class="panelCount" id="midOrderCount">0건</span>
         </div>
-        <p class="subTitle">한 줄씩 입력하면 표 아래로 누적됩니다.</p>
+        <p class="subTitle">연/월을 먼저 고정하고, 해당 월 안에서 품목을 계속 누적 정리합니다.</p>
 
-        <div class="row" style="margin-bottom:10px;">
+        <div class="midLockBar">
+          <span class="midLockLabel">기준월</span>
           <input id="mid_year" placeholder="YYYY" maxlength="4" style="width:76px;">
           <input id="mid_month" placeholder="MM" maxlength="2" style="width:56px;">
+          <button type="button" onclick="lockMidPeriod()">연/월 고정</button>
+          <span class="midLockBadge" id="midLockBadge">고정 안됨</span>
+          <button type="button" class="btnSub" onclick="unlockMidPeriod()">해제</button>
+        </div>
+
+        <div class="row" style="margin-bottom:10px;">
           <select id="mid_vendor">
             <option value="">거래처 선택</option>
             <option>구미차병원</option>
@@ -507,7 +564,7 @@ td input{
           <input id="mid_name" placeholder="품명">
           <input id="mid_spec" placeholder="규격">
           <input id="mid_qty" type="number" placeholder="발주량" min="1">
-          <button onclick="addMidOrder()">등록</button>
+          <button id="midSubmitBtn" onclick="addMidOrder()">등록</button>
         </div>
 
         <div class="tableWrap">
@@ -699,6 +756,7 @@ let midOrders = [];
 
 let yearFilter = "all";
 let monthFilter = "all";
+let midLockedPeriod = localStorage.getItem("midLockedPeriod") || "";
 
 /* LOGIN */
 function checkLoginState(){
@@ -821,6 +879,7 @@ function save(){
   localStorage.setItem("prepaid", JSON.stringify(prepaid));
   localStorage.setItem("monthStartOrders", JSON.stringify(monthStartOrders));
   localStorage.setItem("midOrders", JSON.stringify(midOrders));
+  localStorage.setItem("midLockedPeriod", midLockedPeriod);
 }
 
 function load(){
@@ -829,6 +888,7 @@ function load(){
   prepaid = JSON.parse(localStorage.getItem("prepaid") || "[]");
   monthStartOrders = JSON.parse(localStorage.getItem("monthStartOrders") || "[]");
   midOrders = JSON.parse(localStorage.getItem("midOrders") || "[]");
+  midLockedPeriod = localStorage.getItem("midLockedPeriod") || "";
 }
 
 /* FORMATTERS */
@@ -869,6 +929,7 @@ function bindInputFormatters(){
 
   ["ms_year","mid_year"].forEach(id => {
     const el = document.getElementById(id);
+    if(!el) return;
     el.addEventListener("input", () => {
       el.value = formatYear(el.value);
     });
@@ -876,6 +937,7 @@ function bindInputFormatters(){
 
   ["ms_month","mid_month"].forEach(id => {
     const el = document.getElementById(id);
+    if(!el) return;
     el.addEventListener("input", () => {
       el.value = digitsOnly(el.value).slice(0, 2);
     });
@@ -1075,16 +1137,67 @@ function addMonthStartOrder(){
   document.getElementById("ms_qty").value = "";
 }
 
-function addMidOrder(){
+function lockMidPeriod(){
   const year = formatYear(document.getElementById("mid_year").value);
   const month = formatMonth(document.getElementById("mid_month").value);
+
+  document.getElementById("mid_year").value = year;
+  document.getElementById("mid_month").value = month;
+
+  if(!year || !month){
+    alert("중간발주 기준 연도/월을 먼저 입력해주세요.");
+    return;
+  }
+
+  midLockedPeriod = `${year}-${month}`;
+  save();
+  renderMidLockState();
+  renderMidOrders();
+}
+
+function unlockMidPeriod(){
+  midLockedPeriod = "";
+  save();
+  renderMidLockState();
+  renderMidOrders();
+}
+
+function renderMidLockState(){
+  const badge = document.getElementById("midLockBadge");
+  const yearEl = document.getElementById("mid_year");
+  const monthEl = document.getElementById("mid_month");
+
+  if(midLockedPeriod){
+    const [y, m] = midLockedPeriod.split("-");
+    badge.textContent = `${y}년 ${m}월 고정`;
+    yearEl.value = y;
+    monthEl.value = m;
+    yearEl.disabled = true;
+    monthEl.disabled = true;
+  }else{
+    badge.textContent = "고정 안됨";
+    yearEl.disabled = false;
+    monthEl.disabled = false;
+  }
+}
+
+function addMidOrder(){
+  let year = "";
+  let month = "";
+
+  if(midLockedPeriod){
+    [year, month] = midLockedPeriod.split("-");
+  }else{
+    year = formatYear(document.getElementById("mid_year").value);
+    month = formatMonth(document.getElementById("mid_month").value);
+    document.getElementById("mid_year").value = year;
+    document.getElementById("mid_month").value = month;
+  }
+
   const vendor = document.getElementById("mid_vendor").value;
   const name = normalizeUpper(document.getElementById("mid_name").value);
   const spec = normalizeUpper(document.getElementById("mid_spec").value);
   const qty = Number(document.getElementById("mid_qty").value);
-
-  document.getElementById("mid_year").value = year;
-  document.getElementById("mid_month").value = month;
 
   if(!year || !month || !vendor || !name || !spec || isNaN(qty) || qty <= 0){
     alert("중간발주 입력값을 확인해주세요.");
@@ -1099,8 +1212,6 @@ function addMidOrder(){
   initYearFilter();
   renderMidOrders();
 
-  document.getElementById("mid_year").value = "";
-  document.getElementById("mid_month").value = "";
   document.getElementById("mid_vendor").value = "";
   document.getElementById("mid_name").value = "";
   document.getElementById("mid_spec").value = "";
@@ -1182,6 +1293,7 @@ function refreshList(){
   load();
   checkMonthRollover();
   initYearFilter();
+  renderMidLockState();
   render();
   renderMonthStartOrders();
   renderMidOrders();
@@ -1266,12 +1378,18 @@ function renderMidOrders(){
   const countEl = document.getElementById("midOrderCount");
   tbody.innerHTML = "";
 
-  const filtered = midOrders
-    .sort((a,b) => {
-      if(a.year !== b.year) return b.year.localeCompare(a.year);
-      if(a.month !== b.month) return b.month.localeCompare(a.month);
-      return a.vendor.localeCompare(b.vendor);
-    });
+  let filtered = [...midOrders];
+
+  if(midLockedPeriod){
+    const [lockedYear, lockedMonth] = midLockedPeriod.split("-");
+    filtered = filtered.filter(i => i.year === lockedYear && i.month === lockedMonth);
+  }
+
+  filtered.sort((a,b) => {
+    if(a.year !== b.year) return b.year.localeCompare(a.year);
+    if(a.month !== b.month) return b.month.localeCompare(a.month);
+    return a.vendor.localeCompare(b.vendor);
+  });
 
   countEl.textContent = `${filtered.length}건`;
 
@@ -1280,7 +1398,20 @@ function renderMidOrders(){
     return;
   }
 
+  let currentGroup = "";
+
   filtered.forEach(i => {
+    const groupKey = `${i.year}-${i.month}`;
+
+    if(currentGroup !== groupKey){
+      currentGroup = groupKey;
+      tbody.innerHTML += `
+        <tr class="groupHeader">
+          <td colspan="7">📁 ${i.year}년 ${i.month}월</td>
+        </tr>
+      `;
+    }
+
     tbody.innerHTML += `
       <tr>
         <td>${i.year}</td>
@@ -1359,6 +1490,7 @@ function initializeApp(){
   yearFilter = document.getElementById("yearFilter").value;
   monthFilter = document.getElementById("monthFilter").value;
 
+  renderMidLockState();
   render();
   renderMonthStartOrders();
   renderMidOrders();
@@ -1375,6 +1507,28 @@ window.onload = () => {
 
   document.getElementById("loginId").addEventListener("keydown", e => {
     if(e.key === "Enter") login();
+  });
+
+  ["mid_year","mid_month"].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener("keydown", e => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        lockMidPeriod();
+      }
+    });
+  });
+
+  ["mid_vendor","mid_name","mid_spec","mid_qty"].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.addEventListener("keydown", e => {
+      if(e.key === "Enter"){
+        e.preventDefault();
+        addMidOrder();
+      }
+    });
   });
 };
 </script>
