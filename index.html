@@ -71,9 +71,6 @@ th,td{
   position:fixed;
   bottom:20px;
   right:20px;
-  background:#111;
-  padding:10px 14px;
-  border-radius:10px;
 }
 </style>
 </head>
@@ -106,18 +103,13 @@ th,td{
 </div>
 
 <div class="box">
-  <h3>📥 대량등록 (CSV형)</h3>
+  <h3>📥 대량등록</h3>
   <textarea id="bulkInput" rows="6" style="width:100%"></textarea>
   <button onclick="bulkAdd()">일괄등록</button>
 </div>
 
 <div class="box">
-  <h3>📤 엑셀 다운로드</h3>
-  <button onclick="exportExcel()">다운로드</button>
-</div>
-
-<div class="box">
-  <h3>📋 재고</h3>
+  <h3>📋 재고 목록</h3>
   <table>
     <thead>
       <tr>
@@ -155,12 +147,10 @@ th,td{
 
   <select id="filterMonth" onchange="renderBacklog()">
     <option value="all">전체월</option>
-    <option value="1">1</option><option value="2">2</option>
-    <option value="3">3</option><option value="4">4</option>
-    <option value="5">5</option><option value="6">6</option>
-    <option value="7">7</option><option value="8">8</option>
-    <option value="9">9</option><option value="10">10</option>
-    <option value="11">11</option><option value="12">12</option>
+    <option>1</option><option>2</option><option>3</option>
+    <option>4</option><option>5</option><option>6</option>
+    <option>7</option><option>8</option><option>9</option>
+    <option>10</option><option>11</option><option>12</option>
   </select>
 
   <div id="backlogList"></div>
@@ -207,28 +197,30 @@ function loadData(){
 /* ===== ADD ===== */
 function addItem(){
 
-  let n = document.getElementById("name").value;
-  let q = document.getElementById("qty").value;
-  let e = document.getElementById("exp").value;
-  let l = document.getElementById("lot").value;
-
-  if(!n || !q){
-    alert("시약명 / 수량 필수");
+  if(!hospital.value || !name.value || !qty.value){
+    alert("필수 입력");
     return;
   }
 
   items.push({
     hospital:hospital.value,
-    name:n,
-    qty:Number(q),
-    exp:e || "",
-    lot:l || ""
+    name:name.value,
+    qty:Number(qty.value),
+    exp:exp.value || "",
+    lot:lot.value || ""
   });
 
   saveData();
+  clearInputs();
   render();
 }
 
+function clearInputs(){
+  name.value="";
+  qty.value="";
+  exp.value="";
+  lot.value="";
+}
 
 /* ===== BULK ===== */
 function bulkAdd(){
@@ -241,9 +233,9 @@ function bulkAdd(){
     items.push({
       hospital:hospital.value,
       name:(p[0]||"").trim(),
-      qty:Number((p[1]||0).trim()),
-      exp:(p[2]||"").trim(),
-      lot:(p[3]||"").trim()
+      qty:Number(p[1]||0),
+      exp:(p[2]||""),
+      lot:(p[3]||"")
     });
 
   });
@@ -258,12 +250,16 @@ function render(){
   list.innerHTML="";
   clientButtons.innerHTML="";
 
-  let selected=viewHospital.value;
+  let vh=viewHospital.value;
 
   let filtered=items.filter(i=>{
-    return (selected==="all"||i.hospital===selected)
+    return (vh==="all" || i.hospital===vh)
       && (!selectedClient || i.hospital===selectedClient);
   });
+
+  if(filtered.length===0){
+    list.innerHTML=`<tr><td colspan="5">데이터 없음</td></tr>`;
+  }
 
   filtered.forEach(i=>{
 
@@ -276,15 +272,14 @@ function render(){
         <td>${i.name}</td>
         <td>${i.qty}</td>
         <td style="color:${color}">${i.exp}</td>
-        <td>${i.lot||""}</td>
+        <td>${i.lot}</td>
       </tr>
     `;
   });
 
   [...new Set(items.map(i=>i.hospital))].forEach(c=>{
-    clientButtons.innerHTML+=`
-      <button onclick="toggleClient('${c}')">${c}</button>
-    `;
+    clientButtons.innerHTML+=
+      `<button onclick="toggleClient('${c}')">${c}</button>`;
   });
 
   renderBacklog();
@@ -343,22 +338,6 @@ function renderBacklog(){
       `;
     });
   }
-}
-
-/* ===== EXPORT ===== */
-function exportExcel(){
-
-  let csv="병원,시약,수량,유효기간,LOT\n";
-
-  items.forEach(i=>{
-    csv+=`${i.hospital},${i.name},${i.qty},${i.exp},${i.lot}\n`;
-  });
-
-  let blob=new Blob([csv],{type:"text/csv"});
-  let a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="sungsim.csv";
-  a.click();
 }
 
 /* ===== LOGOUT ===== */
