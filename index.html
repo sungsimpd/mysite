@@ -8,11 +8,141 @@
 <style>
 *{ box-sizing:border-box; }
 
+:root{
+  --bg1:#edf7f0;
+  --bg2:#f8fbf9;
+  --card:#ffffff;
+  --line:#dceee3;
+  --line2:#cfe8d8;
+  --text:#1f2d26;
+  --sub:#6f8577;
+  --green:#2f7d4e;
+  --green-dark:#21593a;
+  --mint:#eef8f2;
+  --shadow:0 10px 30px rgba(0,0,0,0.06);
+}
+
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;
-  background:linear-gradient(180deg,#edf7f0 0%, #f7fbf8 100%);
-  color:#1f2d26;
+  background:linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 100%);
+  color:var(--text);
+}
+
+/* LOGIN */
+#loginScreen{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  background:
+    radial-gradient(circle at top left, rgba(63,160,109,0.10), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(47,125,78,0.10), transparent 30%),
+    linear-gradient(180deg,#eef8f2 0%, #f9fcfa 100%);
+}
+
+.loginCard{
+  width:100%;
+  max-width:430px;
+  background:rgba(255,255,255,0.92);
+  backdrop-filter:blur(14px);
+  border:1px solid rgba(220,238,227,0.95);
+  box-shadow:0 16px 40px rgba(23,48,35,0.10);
+  border-radius:28px;
+  padding:34px 28px 28px;
+}
+
+.loginBrand{
+  text-align:center;
+  margin-bottom:28px;
+}
+
+.loginTitle{
+  font-size:42px;
+  font-weight:900;
+  letter-spacing:2px;
+  line-height:1;
+  background:linear-gradient(90deg,#184f32,#3fa06d);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.loginSub{
+  margin-top:10px;
+  font-size:13px;
+  color:#718678;
+  letter-spacing:1.3px;
+}
+
+.loginField{
+  margin-bottom:14px;
+}
+
+.loginLabel{
+  display:block;
+  font-size:12px;
+  font-weight:800;
+  color:#5d7565;
+  margin:0 0 7px 4px;
+  letter-spacing:0.3px;
+}
+
+.loginInput{
+  width:100%;
+  height:48px;
+  border:1px solid #d6eadc;
+  border-radius:14px;
+  padding:0 14px;
+  font-size:14px;
+  background:#fcfffd;
+  outline:none;
+  transition:0.18s ease;
+}
+
+.loginInput:focus{
+  border-color:#85bc99;
+  box-shadow:0 0 0 4px rgba(47,125,78,0.08);
+}
+
+.loginBtn{
+  width:100%;
+  height:50px;
+  margin-top:6px;
+  border:none;
+  border-radius:15px;
+  background:linear-gradient(135deg,#2f7d4e,#3f9a67);
+  color:#fff;
+  font-size:15px;
+  font-weight:800;
+  letter-spacing:0.3px;
+  cursor:pointer;
+  box-shadow:0 10px 20px rgba(47,125,78,0.18);
+}
+
+.loginBtn:hover{
+  transform:translateY(-1px);
+}
+
+.loginHint{
+  margin-top:14px;
+  text-align:center;
+  font-size:12px;
+  color:#7f9387;
+}
+
+#loginError{
+  margin-top:12px;
+  text-align:center;
+  font-size:12px;
+  font-weight:700;
+  color:#c14a4a;
+  min-height:18px;
+}
+
+/* APP */
+#appScreen{
+  display:none;
 }
 
 /* HEADER */
@@ -70,6 +200,21 @@ header{
   color:#587765;
   white-space:nowrap;
   opacity:0.95;
+}
+
+.logoutBtn{
+  position:absolute;
+  left:0;
+  top:50%;
+  transform:translateY(-50%);
+  background:#eef8f2;
+  color:#2f7d4e;
+  border:1px solid #d7eadf;
+  border-radius:12px;
+  padding:8px 12px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
 }
 
 /* LAYOUT */
@@ -257,16 +402,36 @@ td input{
   padding:5px 9px;
 }
 
-.orderCard{
-  background:#f8fcf9;
+.orderGroup{
+  margin:10px 0 14px;
   border:1px solid #dceee3;
   border-radius:14px;
+  overflow:hidden;
+  background:#fbfefc;
+}
+
+.orderGroupHeader{
+  padding:10px 12px;
+  background:#eff8f3;
+  border-bottom:1px solid #dceee3;
+  font-size:12px;
+  font-weight:900;
+  color:#2a6843;
+  letter-spacing:0.3px;
+}
+
+.orderCard{
+  background:#f8fcf9;
+  border-bottom:1px solid #e4f1e9;
   padding:11px 12px;
-  margin:8px 0;
   display:flex;
   justify-content:space-between;
   align-items:center;
   gap:10px;
+}
+
+.orderGroup .orderCard:last-child{
+  border-bottom:none;
 }
 
 .orderText{
@@ -277,14 +442,6 @@ td input{
 .orderStrong{
   font-weight:800;
   color:#244d37;
-}
-
-.orderVendor{
-  font-size:11px;
-  font-weight:800;
-  color:#2f7d4e;
-  margin-bottom:2px;
-  letter-spacing:0.3px;
 }
 
 @media (max-width: 960px){
@@ -298,7 +455,7 @@ td input{
     flex-direction:column;
     gap:10px;
   }
-  #clockBox{
+  #clockBox, .logoutBtn{
     position:static;
     transform:none;
   }
@@ -308,197 +465,236 @@ td input{
 
 <body>
 
-<header>
-  <div class="headerInner">
-    <div class="logoWrap">
-      <div class="logoTitle">SUNGSIM</div>
-      <div class="logoSub">Inventory Dashboard</div>
+<!-- LOGIN -->
+<section id="loginScreen">
+  <div class="loginCard">
+    <div class="loginBrand">
+      <div class="loginTitle">SUNGSIM</div>
+      <div class="loginSub">SMART INVENTORY WORKSPACE</div>
     </div>
-    <span id="clockBox"></span>
+
+    <div class="loginField">
+      <label class="loginLabel" for="loginId">아이디</label>
+      <input id="loginId" class="loginInput" placeholder="아이디 입력">
+    </div>
+
+    <div class="loginField">
+      <label class="loginLabel" for="loginPw">비밀번호</label>
+      <input id="loginPw" class="loginInput" type="password" placeholder="비밀번호 입력">
+    </div>
+
+    <button class="loginBtn" onclick="login()">로그인</button>
+    <div id="loginError"></div>
+    <div class="loginHint">기본 예시: admin / 1234</div>
   </div>
-</header>
+</section>
 
-<div class="wrap">
+<!-- APP -->
+<div id="appScreen">
+  <header>
+    <div class="headerInner">
+      <button class="logoutBtn" onclick="logout()">로그아웃</button>
 
-  <div class="left">
-
-    <!-- 월초발주 -->
-    <div class="box">
-      <div class="panelTitle">
-        <h3 style="margin:0;">🗂 월초발주 목록 등록</h3>
-        <span class="panelCount" id="monthStartOrderCount">0건</span>
-      </div>
-      <p class="subTitle">연 / 월 / 거래처 기준으로 월초발주를 등록합니다.</p>
-
-      <div class="row">
-        <input id="ms_year" placeholder="YYYY" maxlength="4" style="width:76px;">
-        <input id="ms_month" placeholder="MM" maxlength="2" style="width:56px;">
-        <input id="ms_vendor" placeholder="거래처">
-        <input id="ms_name" placeholder="품명">
-        <input id="ms_spec" placeholder="규격">
-        <input id="ms_qty" type="number" placeholder="발주량" min="1">
-        <button onclick="addMonthStartOrder()">등록</button>
+      <div class="logoWrap">
+        <div class="logoTitle">SUNGSIM</div>
+        <div class="logoSub">Inventory Dashboard</div>
       </div>
 
-      <div id="monthStartOrderList"></div>
+      <span id="clockBox"></span>
     </div>
+  </header>
 
-    <!-- 중간발주 -->
-    <div class="box">
-      <div class="panelTitle">
-        <h3 style="margin:0;">🗂 중간발주 목록 등록</h3>
-        <span class="panelCount" id="midOrderCount">0건</span>
-      </div>
-      <p class="subTitle">연 / 월 / 거래처 기준으로 중간발주를 등록합니다.</p>
+  <div class="wrap">
 
-      <div class="row">
-        <input id="mid_year" placeholder="YYYY" maxlength="4" style="width:76px;">
-        <input id="mid_month" placeholder="MM" maxlength="2" style="width:56px;">
-        <input id="mid_vendor" placeholder="거래처">
-        <input id="mid_name" placeholder="품명">
-        <input id="mid_spec" placeholder="규격">
-        <input id="mid_qty" type="number" placeholder="발주량" min="1">
-        <button onclick="addMidOrder()">등록</button>
-      </div>
+    <div class="left">
 
-      <div id="midOrderList"></div>
-    </div>
+      <!-- 월초발주 -->
+      <div class="box">
+        <div class="panelTitle">
+          <h3 style="margin:0;">🗂 월초발주 목록 등록</h3>
+          <span class="panelCount" id="monthStartOrderCount">0건</span>
+        </div>
+        <p class="subTitle">연 / 월 / 거래처 기준으로 월초발주를 등록합니다.</p>
 
-    <!-- 재고 등록 -->
-    <div class="box">
-      <h3>📦 재고 등록</h3>
-      <p class="subTitle">등록용 입력값입니다. 목록 조회 연/월 필터와 별도로 동작합니다.</p>
-
-      <div class="row">
-        <select id="hospital">
-          <option>구미차병원</option>
-          <option>경주동국대병원</option>
-        </select>
-
-        <input id="reagentName" placeholder="시약명">
-        <input id="qty" type="number" placeholder="수량" min="1">
-
-        <div class="dateGroup">
-          <input id="year" placeholder="YYYY" maxlength="4" style="width:76px;">
-          <input id="month" placeholder="MM" maxlength="2" style="width:56px;">
-          <input id="day" placeholder="DD" maxlength="2" style="width:56px;">
+        <div class="row">
+          <input id="ms_year" placeholder="YYYY" maxlength="4" style="width:76px;">
+          <input id="ms_month" placeholder="MM" maxlength="2" style="width:56px;">
+          <select id="ms_vendor"></select>
+          <input id="ms_name" placeholder="품명">
+          <input id="ms_spec" placeholder="규격">
+          <input id="ms_qty" type="number" placeholder="발주량" min="1">
+          <button onclick="addMonthStartOrder()">등록</button>
         </div>
 
-        <input id="lot" placeholder="LOT">
-        <button onclick="addItem()">등록</button>
+        <div id="monthStartOrderList"></div>
       </div>
 
-      <div class="infoBar">
-        <span class="badge">시약명 / LOT 자동 대문자</span>
-        <span class="badge">월 / 일 자동 두자리</span>
-        <span class="badge">같은 재고는 수량만 합산</span>
+      <!-- 중간발주 -->
+      <div class="box">
+        <div class="panelTitle">
+          <h3 style="margin:0;">🗂 중간발주 목록 등록</h3>
+          <span class="panelCount" id="midOrderCount">0건</span>
+        </div>
+        <p class="subTitle">연 / 월 / 거래처 기준으로 중간발주를 등록합니다.</p>
+
+        <div class="row">
+          <input id="mid_year" placeholder="YYYY" maxlength="4" style="width:76px;">
+          <input id="mid_month" placeholder="MM" maxlength="2" style="width:56px;">
+          <select id="mid_vendor"></select>
+          <input id="mid_name" placeholder="품명">
+          <input id="mid_spec" placeholder="규격">
+          <input id="mid_qty" type="number" placeholder="발주량" min="1">
+          <button onclick="addMidOrder()">등록</button>
+        </div>
+
+        <div id="midOrderList"></div>
       </div>
+
+      <!-- 재고 등록 -->
+      <div class="box">
+        <h3>📦 재고 등록</h3>
+        <p class="subTitle">등록용 입력값입니다. 목록 조회 연/월 필터와 별도로 동작합니다.</p>
+
+        <div class="row">
+          <select id="hospital">
+            <option>구미차병원</option>
+            <option>경주동국대병원</option>
+          </select>
+
+          <input id="reagentName" placeholder="시약명">
+          <input id="qty" type="number" placeholder="수량" min="1">
+
+          <div class="dateGroup">
+            <input id="year" placeholder="YYYY" maxlength="4" style="width:76px;">
+            <input id="month" placeholder="MM" maxlength="2" style="width:56px;">
+            <input id="day" placeholder="DD" maxlength="2" style="width:56px;">
+          </div>
+
+          <input id="lot" placeholder="LOT">
+          <button onclick="addItem()">등록</button>
+        </div>
+
+        <div class="infoBar">
+          <span class="badge">시약명 / LOT 자동 대문자</span>
+          <span class="badge">월 / 일 자동 두자리</span>
+          <span class="badge">같은 재고는 수량만 합산</span>
+        </div>
+      </div>
+
+      <!-- 재고 목록 -->
+      <div class="box">
+        <h3>📋 재고 목록</h3>
+        <p class="subTitle">조회용 연/월 필터입니다. 등록 날짜 입력과 별도입니다.</p>
+
+        <div class="filterRow">
+          <span class="badge">조회 기간</span>
+
+          <select id="yearFilter" onchange="applyFilter()">
+            <option value="all">전체연도</option>
+          </select>
+
+          <select id="monthFilter" onchange="applyFilter()">
+            <option value="all">전체월</option>
+            <option value="01">1월</option>
+            <option value="02">2월</option>
+            <option value="03">3월</option>
+            <option value="04">4월</option>
+            <option value="05">5월</option>
+            <option value="06">6월</option>
+            <option value="07">7월</option>
+            <option value="08">8월</option>
+            <option value="09">9월</option>
+            <option value="10">10월</option>
+            <option value="11">11월</option>
+            <option value="12">12월</option>
+          </select>
+
+          <button class="btnRefresh" onclick="refreshList()">새로고침</button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>기준월</th>
+              <th>병원</th>
+              <th>시약</th>
+              <th>수량</th>
+              <th>유효기간</th>
+              <th>LOT</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody id="list"></tbody>
+        </table>
+      </div>
+
     </div>
 
-    <!-- 재고 목록 -->
-    <div class="box">
-      <h3>📋 재고 목록</h3>
-      <p class="subTitle">조회용 연/월 필터입니다. 등록 날짜 입력과 별도입니다.</p>
+    <div class="right">
 
-      <div class="filterRow">
-        <span class="badge">조회 기간</span>
+      <!-- 선납 -->
+      <div class="box">
+        <div class="panelTitle">
+          <h3 style="margin:0;">💳 날짜별 선납 목록</h3>
+          <span class="panelCount" id="prepaidCount">0건</span>
+        </div>
 
-        <select id="yearFilter" onchange="applyFilter()">
-          <option value="all">전체연도</option>
-        </select>
+        <p class="subTitle">선납 내역을 날짜 기준으로 입력하고 관리합니다.</p>
 
-        <select id="monthFilter" onchange="applyFilter()">
-          <option value="all">전체월</option>
-          <option value="01">1월</option>
-          <option value="02">2월</option>
-          <option value="03">3월</option>
-          <option value="04">4월</option>
-          <option value="05">5월</option>
-          <option value="06">6월</option>
-          <option value="07">7월</option>
-          <option value="08">8월</option>
-          <option value="09">9월</option>
-          <option value="10">10월</option>
-          <option value="11">11월</option>
-          <option value="12">12월</option>
-        </select>
+        <div class="row">
+          <select id="p_hospital">
+            <option>구미차병원</option>
+            <option>경주동국대병원</option>
+          </select>
 
-        <button class="btnRefresh" onclick="refreshList()">새로고침</button>
+          <input id="p_name" placeholder="시약명">
+          <input id="p_qty" type="number" placeholder="수량" min="1">
+          <input id="p_lot" placeholder="LOT">
+          <input id="p_date" placeholder="YYYY-MM-DD">
+          <button onclick="addPrepaid()">등록</button>
+        </div>
+
+        <div id="prepaidList"></div>
       </div>
 
-      <table>
-        <thead>
-          <tr>
-            <th>기준월</th>
-            <th>병원</th>
-            <th>시약</th>
-            <th>수량</th>
-            <th>유효기간</th>
-            <th>LOT</th>
-            <th>관리</th>
-          </tr>
-        </thead>
-        <tbody id="list"></tbody>
-      </table>
+      <!-- 미납 -->
+      <div class="box">
+        <div class="panelTitle">
+          <h3 style="margin:0;">⚠ 미납 / 병원 재고 관리</h3>
+          <span class="panelCount" id="backlogCount">0건</span>
+        </div>
+
+        <div class="row">
+          <select id="b_hospital">
+            <option>구미차병원</option>
+            <option>경주동국대병원</option>
+          </select>
+
+          <input id="b_name" placeholder="시약명">
+          <input id="b_qty" type="number" placeholder="수량" min="1">
+          <input id="b_lot" placeholder="LOT">
+          <input id="b_exp" placeholder="YYYY-MM-DD">
+          <button onclick="addBacklog()">등록</button>
+        </div>
+
+        <div id="backlogList"></div>
+      </div>
+
     </div>
 
   </div>
-
-  <div class="right">
-
-    <!-- 선납 -->
-    <div class="box">
-      <div class="panelTitle">
-        <h3 style="margin:0;">💳 날짜별 선납 목록</h3>
-        <span class="panelCount" id="prepaidCount">0건</span>
-      </div>
-
-      <p class="subTitle">선납 내역을 날짜 기준으로 입력하고 관리합니다.</p>
-
-      <div class="row">
-        <select id="p_hospital">
-          <option>구미차병원</option>
-          <option>경주동국대병원</option>
-        </select>
-
-        <input id="p_name" placeholder="시약명">
-        <input id="p_qty" type="number" placeholder="수량" min="1">
-        <input id="p_lot" placeholder="LOT">
-        <input id="p_date" placeholder="YYYY-MM-DD">
-        <button onclick="addPrepaid()">등록</button>
-      </div>
-
-      <div id="prepaidList"></div>
-    </div>
-
-    <!-- 미납 -->
-    <div class="box">
-      <div class="panelTitle">
-        <h3 style="margin:0;">⚠ 미납 / 병원 재고 관리</h3>
-        <span class="panelCount" id="backlogCount">0건</span>
-      </div>
-
-      <div class="row">
-        <select id="b_hospital">
-          <option>구미차병원</option>
-          <option>경주동국대병원</option>
-        </select>
-
-        <input id="b_name" placeholder="시약명">
-        <input id="b_qty" type="number" placeholder="수량" min="1">
-        <input id="b_lot" placeholder="LOT">
-        <input id="b_exp" placeholder="YYYY-MM-DD">
-        <button onclick="addBacklog()">등록</button>
-      </div>
-
-      <div id="backlogList"></div>
-    </div>
-
-  </div>
-
 </div>
 
 <script>
+const LOGIN_ID = "admin";
+const LOGIN_PW = "1234";
+
+const VENDORS = [
+  "구미차병원",
+  "경주동국대병원"
+
+];
+
 let items = [];
 let backlog = [];
 let prepaid = [];
@@ -507,6 +703,36 @@ let midOrders = [];
 
 let yearFilter = "all";
 let monthFilter = "all";
+
+/* ---------------- LOGIN ---------------- */
+function checkLoginState(){
+  const isLoggedIn = localStorage.getItem("sungsimLoggedIn") === "true";
+  document.getElementById("loginScreen").style.display = isLoggedIn ? "none" : "flex";
+  document.getElementById("appScreen").style.display = isLoggedIn ? "block" : "none";
+
+  if(isLoggedIn){
+    initializeApp();
+  }
+}
+
+function login(){
+  const id = document.getElementById("loginId").value.trim();
+  const pw = document.getElementById("loginPw").value.trim();
+  const errorEl = document.getElementById("loginError");
+
+  if(id === LOGIN_ID && pw === LOGIN_PW){
+    localStorage.setItem("sungsimLoggedIn", "true");
+    errorEl.textContent = "";
+    checkLoginState();
+  }else{
+    errorEl.textContent = "아이디 또는 비밀번호가 올바르지 않습니다.";
+  }
+}
+
+function logout(){
+  localStorage.removeItem("sungsimLoggedIn");
+  location.reload();
+}
 
 /* ---------------- CLOCK ---------------- */
 function updateClock(){
@@ -517,11 +743,23 @@ function updateClock(){
   const h = String(now.getHours()).padStart(2, "0");
   const mi = String(now.getMinutes()).padStart(2, "0");
   const s = String(now.getSeconds()).padStart(2, "0");
-  document.getElementById("clockBox").textContent = `${y}.${m}.${d}  ${h}:${mi}:${s}`;
+  const clock = document.getElementById("clockBox");
+  if(clock) clock.textContent = `${y}.${m}.${d}  ${h}:${mi}:${s}`;
 }
 setInterval(updateClock, 1000);
 
 /* ---------------- HELPERS ---------------- */
+function populateVendorSelects(){
+  ["ms_vendor","mid_vendor"].forEach(id => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.innerHTML = `<option value="">거래처 선택</option>`;
+    VENDORS.forEach(v => {
+      el.innerHTML += `<option value="${v}">${v}</option>`;
+    });
+  });
+}
+
 function getCurrentPeriod(){
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -607,6 +845,16 @@ function itemKey(obj){
   ].join("||");
 }
 
+function groupByVendor(arr){
+  const grouped = {};
+  arr.forEach(item => {
+    const vendor = item.vendor || "기타거래처";
+    if(!grouped[vendor]) grouped[vendor] = [];
+    grouped[vendor].push(item);
+  });
+  return grouped;
+}
+
 /* ---------------- STORAGE ---------------- */
 function save(){
   localStorage.setItem("items", JSON.stringify(items));
@@ -628,7 +876,7 @@ function load(){
 function bindInputFormatters(){
   const upperIds = [
     "reagentName","lot","b_name","b_lot","p_name","p_lot",
-    "ms_vendor","ms_name","ms_spec","mid_vendor","mid_name","mid_spec"
+    "ms_name","ms_spec","mid_name","mid_spec"
   ];
 
   upperIds.forEach(id => {
@@ -723,7 +971,6 @@ function checkMonthRollover(){
 function initYearFilter(){
   const yearFilterEl = document.getElementById("yearFilter");
   const set = new Set();
-
   const nowYear = new Date().getFullYear();
 
   for(let y = nowYear - 2; y <= nowYear + 3; y++){
@@ -748,7 +995,6 @@ function initYearFilter(){
   });
 
   const currentValue = yearFilterEl.value || "all";
-
   yearFilterEl.innerHTML = `<option value="all">전체연도</option>`;
 
   [...set].sort((a,b) => b - a).forEach(v => {
@@ -857,7 +1103,7 @@ function addMonthStartOrder(){
     document.getElementById("ms_year").value,
     document.getElementById("ms_month").value
   );
-  const vendor = normalizeUpper(document.getElementById("ms_vendor").value);
+  const vendor = document.getElementById("ms_vendor").value;
   const name = normalizeUpper(document.getElementById("ms_name").value);
   const spec = normalizeUpper(document.getElementById("ms_spec").value);
   const qty = Number(document.getElementById("ms_qty").value);
@@ -917,17 +1163,19 @@ function renderMonthStartOrders(){
     return;
   }
 
-  filtered.forEach(i => {
-    box.innerHTML += `
-      <div class="orderCard">
-        <div class="orderText">
-          <div class="orderVendor">${i.vendor}</div>
-          <span class="orderStrong">${i.period}</span><br>
-          품명 ${i.name} | 규격 ${i.spec} | 발주량 ${i.qty}
+  const grouped = groupByVendor(filtered);
+  Object.keys(grouped).sort().forEach(vendor => {
+    box.innerHTML += `<div class="orderGroup"><div class="orderGroupHeader">${vendor}</div>${
+      grouped[vendor].map(i => `
+        <div class="orderCard">
+          <div class="orderText">
+            <span class="orderStrong">${i.period}</span><br>
+            품명 ${i.name} | 규격 ${i.spec} | 발주량 ${i.qty}
+          </div>
+          <button class="btnSub" onclick="delMonthStartOrder(${i.id})">삭제</button>
         </div>
-        <button class="btnSub" onclick="delMonthStartOrder(${i.id})">삭제</button>
-      </div>
-    `;
+      `).join("")
+    }</div>`;
   });
 }
 
@@ -937,7 +1185,7 @@ function addMidOrder(){
     document.getElementById("mid_year").value,
     document.getElementById("mid_month").value
   );
-  const vendor = normalizeUpper(document.getElementById("mid_vendor").value);
+  const vendor = document.getElementById("mid_vendor").value;
   const name = normalizeUpper(document.getElementById("mid_name").value);
   const spec = normalizeUpper(document.getElementById("mid_spec").value);
   const qty = Number(document.getElementById("mid_qty").value);
@@ -997,17 +1245,19 @@ function renderMidOrders(){
     return;
   }
 
-  filtered.forEach(i => {
-    box.innerHTML += `
-      <div class="orderCard">
-        <div class="orderText">
-          <div class="orderVendor">${i.vendor}</div>
-          <span class="orderStrong">${i.period}</span><br>
-          품명 ${i.name} | 규격 ${i.spec} | 발주량 ${i.qty}
+  const grouped = groupByVendor(filtered);
+  Object.keys(grouped).sort().forEach(vendor => {
+    box.innerHTML += `<div class="orderGroup"><div class="orderGroupHeader">${vendor}</div>${
+      grouped[vendor].map(i => `
+        <div class="orderCard">
+          <div class="orderText">
+            <span class="orderStrong">${i.period}</span><br>
+            품명 ${i.name} | 규격 ${i.spec} | 발주량 ${i.qty}
+          </div>
+          <button class="btnSub" onclick="delMidOrder(${i.id})">삭제</button>
         </div>
-        <button class="btnSub" onclick="delMidOrder(${i.id})">삭제</button>
-      </div>
-    `;
+      `).join("")
+    }</div>`;
   });
 }
 
@@ -1183,9 +1433,10 @@ function renderBacklog(){
 }
 
 /* ---------------- INIT ---------------- */
-window.onload = () => {
+function initializeApp(){
   updateClock();
   load();
+  populateVendorSelects();
   bindInputFormatters();
   checkMonthRollover();
   initYearFilter();
@@ -1198,6 +1449,18 @@ window.onload = () => {
   render();
   renderPrepaid();
   renderBacklog();
+}
+
+window.onload = () => {
+  checkLoginState();
+
+  document.getElementById("loginPw").addEventListener("keydown", e => {
+    if(e.key === "Enter") login();
+  });
+
+  document.getElementById("loginId").addEventListener("keydown", e => {
+    if(e.key === "Enter") login();
+  });
 };
 </script>
 
