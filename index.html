@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SUNGSIM ERP</title>
+<title>SUNGSIM</title>
 
 <style>
 body{
@@ -18,12 +18,11 @@ header{
   font-size:30px;
   font-weight:800;
   border-bottom:2px solid #cfe8d8;
-  letter-spacing:4px;
 }
 
 .container{display:flex;gap:20px;padding:20px;}
-.left{width:60%;}
-.right{width:40%;}
+.left{width:65%;}
+.right{width:35%;}
 
 .box{
   background:#fff;
@@ -31,23 +30,17 @@ header{
   margin-bottom:15px;
   border-radius:14px;
   box-shadow:0 3px 10px rgba(0,0,0,0.06);
-  border:1px solid #d9eee1;
-}
-
-.scroll{
-  max-height:300px;
-  overflow-y:auto;
 }
 
 input,select{
   padding:7px;
   margin:4px;
-  border-radius:8px;
   border:1px solid #cfe8d8;
+  border-radius:8px;
 }
 
 button{
-  padding:7px 10px;
+  padding:6px 10px;
   background:#2f7d4e;
   color:#fff;
   border:none;
@@ -67,28 +60,18 @@ td,th{
   padding:6px;
 }
 
-.card{
-  background:#f5fbf7;
-  padding:10px;
-  margin:5px 0;
-  border-radius:10px;
-  border:1px solid #d9eee1;
+/* RIGHT 유지 */
+.rightBox{
+  max-height:300px;
+  overflow-y:auto;
 }
 
-#loginBox{
-  width:300px;
-  margin:120px auto;
+.alert{
   background:#fff;
-  padding:20px;
-  border-radius:12px;
-  text-align:center;
-  box-shadow:0 2px 10px rgba(0,0,0,0.08);
-}
-
-#logoutBtn{
-  position:fixed;
-  bottom:15px;
-  right:15px;
+  border-left:4px solid #2f7d4e;
+  padding:8px;
+  margin:5px 0;
+  border-radius:8px;
 }
 </style>
 </head>
@@ -97,26 +80,20 @@ td,th{
 
 <header>SUNGSIM</header>
 
-<button id="logoutBtn" onclick="logout()">로그아웃</button>
-
-<!-- LOGIN -->
-<div id="loginBox">
-  <h3>LOGIN</h3>
-  <input id="login_id" placeholder="ID">
-  <input id="login_pw" type="password" placeholder="PW">
-  <button onclick="login()">로그인</button>
-</div>
-
-<!-- APP -->
-<div id="app" style="display:none;">
-
 <div class="container">
 
 <!-- LEFT -->
 <div class="left">
 
+<!-- 재고 -->
 <div class="box">
-  <h3>📦 재고 (입고)</h3>
+  <h3>📦 재고 등록</h3>
+
+  <select id="hospital">
+    <option>구미차병원</option>
+    <option>경주동국대병원</option>
+  </select>
+
   <input id="name" placeholder="시약명">
   <input id="qty" type="number" placeholder="수량">
   <input id="exp" type="date">
@@ -124,6 +101,7 @@ td,th{
   <button onclick="addItem()">등록</button>
 </div>
 
+<!-- 출고 -->
 <div class="box">
   <h3>🚚 출고</h3>
   <input id="out_name" placeholder="시약명">
@@ -131,117 +109,90 @@ td,th{
   <button onclick="outItem()">출고</button>
 </div>
 
+<!-- 재고 목록 -->
 <div class="box">
-  <h3>📋 미납 관리</h3>
-  <input id="b_name" placeholder="시약명">
-  <input id="b_qty" type="number" placeholder="수량">
-  <input id="b_reason" placeholder="사유">
-  <button onclick="addBacklog()">등록</button>
+  <h3>📋 재고 목록</h3>
 
-  <div class="scroll" id="backlog"></div>
+  <table>
+    <thead>
+      <tr>
+        <th>병원</th>
+        <th>시약</th>
+        <th>수량</th>
+        <th>유효기간</th>
+        <th>LOT</th>
+        <th>삭제</th>
+      </tr>
+    </thead>
+    <tbody id="list"></tbody>
+  </table>
 </div>
 
-<div class="box">
-  <h3>📊 병원 대시보드</h3>
-  <div id="dash"></div>
 </div>
 
-</div>
-
-<!-- RIGHT -->
+<!-- RIGHT (미납 유지) -->
 <div class="right">
 
 <div class="box">
-  <h3>📋 재고 리스트</h3>
-
-  <div class="scroll">
-    <table>
-      <thead>
-        <tr>
-          <th>병원</th>
-          <th>시약</th>
-          <th>수량</th>
-          <th>유효기간</th>
-          <th>LOT</th>
-          <th>삭제</th>
-        </tr>
-      </thead>
-      <tbody id="list"></tbody>
-    </table>
-  </div>
-
+  <h3>⚠ 미납 시약 관리</h3>
+  <div class="rightBox" id="backlog"></div>
 </div>
 
 </div>
 
-</div>
 </div>
 
 <script>
 
-/* ================= LOGIN ================= */
-const ADMIN_ID="sungsim";
-const ADMIN_PW="8658";
-
-function login(){
-  const id=document.getElementById("login_id").value;
-  const pw=document.getElementById("login_pw").value;
-
-  if(id===ADMIN_ID && pw===ADMIN_PW){
-    localStorage.setItem("login","ok");
-    show();
-  }else alert("로그인 실패");
-}
-
-function logout(){
-  localStorage.removeItem("login");
-  location.reload();
-}
-
-function show(){
-  loginBox.style.display="none";
-  app.style.display="block";
-}
-
-/* ================= DATA ================= */
-let items=[];
-let backlog=[];
-let hospital="구미차병원";
+/* ================= STATE ================= */
+let items = [];
+let backlog = [];
 
 /* ================= INIT ================= */
-window.onload=()=>{
-  if(localStorage.getItem("login")==="ok") show();
-  load();
+window.onload = () => {
+  items = JSON.parse(localStorage.getItem("items") || "[]");
+  backlog = JSON.parse(localStorage.getItem("backlog") || "[]");
   render();
+  renderBacklog();
 };
 
 /* ================= SAVE ================= */
 function save(){
-  localStorage.setItem("items",JSON.stringify(items));
-  localStorage.setItem("backlog",JSON.stringify(backlog));
+  localStorage.setItem("items", JSON.stringify(items));
+  localStorage.setItem("backlog", JSON.stringify(backlog));
 }
 
-function load(){
-  items=JSON.parse(localStorage.getItem("items")||"[]");
-  backlog=JSON.parse(localStorage.getItem("backlog")||"[]");
-}
-
-/* ================= MERGE ================= */
+/* ================= ADD (중복 합산 유지) ================= */
 function addItem(){
 
-  const n=name.value;
-  const q=Number(qty.value);
-  const e=exp.value;
-  const l=lot.value;
+  const h = hospital.value;
+  const n = name.value;
+  const q = Number(qty.value);
+  const e = exp.value;
+  const l = lot.value;
 
-  if(!n||!q) return alert("필수");
+  if(!n || !q){
+    alert("필수 입력");
+    return;
+  }
 
-  let t=items.find(i=>i.name===n && i.lot===l && i.exp===e);
+  let t = items.find(i =>
+    i.hospital === h &&
+    i.name === n &&
+    i.exp === e &&
+    i.lot === l
+  );
 
   if(t){
-    t.qty+=q;
+    t.qty += q;
   }else{
-    items.push({hospital,name:n,qty:q,exp:e,lot:l});
+    items.push({
+      hospital:h,
+      name:n,
+      qty:q,
+      exp:e,
+      lot:l
+    });
   }
 
   save();
@@ -251,35 +202,29 @@ function addItem(){
 /* ================= OUT ================= */
 function outItem(){
 
-  const n=out_name.value;
-  const q=Number(out_qty.value);
+  const n = out_name.value;
+  const q = Number(out_qty.value);
 
-  let t=items.find(i=>i.name===n);
+  let t = items.find(i => i.name === n);
 
-  if(!t) return alert("없음");
-  if(t.qty<q) return alert("부족");
+  if(!t){
+    alert("재고 없음");
+    return;
+  }
 
-  t.qty-=q;
+  if(t.qty < q){
+    alert("수량 부족");
+    return;
+  }
+
+  t.qty -= q;
 
   save();
   render();
 }
 
-/* ================= BACKLOG ================= */
-function addBacklog(){
-
-  backlog.push({
-    name:b_name.value,
-    qty:Number(b_qty.value),
-    reason:b_reason.value
-  });
-
-  save();
-  renderBacklog();
-}
-
 /* ================= DELETE ================= */
-function del(i){
+function deleteItem(i){
   items.splice(i,1);
   save();
   render();
@@ -288,59 +233,47 @@ function del(i){
 /* ================= RENDER ================= */
 function render(){
 
-  list.innerHTML="";
+  list.innerHTML = "";
 
   items.forEach((i,idx)=>{
 
-    list.innerHTML+=`
+    list.innerHTML += `
       <tr>
         <td>${i.hospital}</td>
         <td>${i.name}</td>
         <td>${i.qty}</td>
         <td>${i.exp||""}</td>
         <td>${i.lot||""}</td>
-        <td><button onclick="del(${idx})">삭제</button></td>
+        <td><button onclick="deleteItem(${idx})">삭제</button></td>
       </tr>
     `;
   });
-
-  renderDash();
-  renderBacklog();
 }
 
-/* ================= DASH ================= */
-function renderDash(){
-
-  let m={};
-
-  items.forEach(i=>{
-    m[i.hospital]=(m[i.hospital]||0)+i.qty;
-  });
-
-  dash.innerHTML="";
-
-  for(let k in m){
-    dash.innerHTML+=`
-      <div class="card">
-        <b>${k}</b><br>
-        ${m[k]} EA
-      </div>
-    `;
-  }
-}
-
-/* ================= BACKLOG RENDER ================= */
+/* ================= BACKLOG (오른쪽 유지) ================= */
 function renderBacklog(){
 
-  backlog.innerHTML="";
+  backlog.innerHTML = "";
 
   backlog.forEach(b=>{
-    backlog.innerHTML+=`
-      <div class="card">
-        ${b.name} / ${b.qty} / ${b.reason}
+    backlog.innerHTML += `
+      <div class="alert">
+        ${b.name || "미납"} / ${b.text || "대기"}
       </div>
     `;
   });
+}
+
+/* ================= 자동 미납 테스트 ================= */
+function addBacklog(){
+
+  backlog.push({
+    name:"미납",
+    text:"자동 등록"
+  });
+
+  save();
+  renderBacklog();
 }
 
 </script>
