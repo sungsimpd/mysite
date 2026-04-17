@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>SUNGSIM</title>
+<title>SUNGSIM Workspace</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -37,9 +37,7 @@ body{
   min-height:100vh;
   overflow-x:hidden;
   font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;
-  background:
-    radial-gradient(circle at top left, rgba(255,255,255,0.72), transparent 20%),
-    linear-gradient(180deg,#f6f8fb 0%, #eef2f6 100%);
+  background:#f5f6f8;
   color:var(--text);
   position:relative;
 }
@@ -192,30 +190,33 @@ header{
   position:sticky;
   top:0;
   z-index:10;
-  background:rgba(248,250,252,0.86);
-  backdrop-filter:blur(18px);
-  border-bottom:1px solid rgba(208,216,226,0.88);
-  padding:20px 24px 14px;
-  box-shadow:0 10px 30px rgba(15,23,42,0.06);
+  background:#ffffff;
+  border-bottom:1px solid #e5e7eb;
+  padding:0;
+  box-shadow:0 1px 0 rgba(15,23,42,0.04);
 }
 
 .headerInner{
+  max-width:1440px;
+  margin:0 auto;
   display:flex;
   align-items:center;
-  justify-content:center;
+  justify-content:flex-start;
+  gap:18px;
   position:relative;
-  margin-bottom:16px;
+  padding:16px 20px 14px;
 }
 
 .logoWrap{
   display:flex;
   flex-direction:column;
-  align-items:center;
+  align-items:flex-start;
   justify-content:center;
+  padding-left:76px;
 }
 
 .logoTitle{
-  font-size:36px;
+  font-size:28px;
   font-weight:900;
   letter-spacing:1.2px;
   line-height:1;
@@ -224,7 +225,7 @@ header{
 }
 
 .logoSub{
-  margin-top:8px;
+  margin-top:5px;
   font-size:11px;
   font-weight:700;
   letter-spacing:2.2px;
@@ -234,7 +235,7 @@ header{
 
 #clockBox{
   position:absolute;
-  right:0;
+  right:20px;
   top:50%;
   transform:translateY(-50%);
   font-size:12px;
@@ -246,7 +247,7 @@ header{
 
 .logoutBtn{
   position:absolute;
-  left:0;
+  left:20px;
   top:50%;
   transform:translateY(-50%);
   background:#ffffff;
@@ -261,52 +262,60 @@ header{
 }
 
 .topNav{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  justify-content:center;
-  padding:4px;
-  background:rgba(255,255,255,0.76);
-  border:1px solid #dde3ec;
-  border-radius:18px;
-  width:max-content;
-  max-width:100%;
+  max-width:1440px;
   margin:0 auto;
+  display:flex;
+  gap:0;
+  flex-wrap:nowrap;
+  justify-content:flex-start;
+  padding:0 20px;
+  background:#ffffff;
+  border-top:1px solid #f2f4f7;
+  border-bottom:1px solid #eaecf0;
+  border-radius:0;
+  overflow-x:auto;
 }
 
 .navBtn{
-  min-width:164px;
-  padding:12px 18px;
-  border-radius:14px;
-  border:1px solid transparent;
+  min-width:auto;
+  padding:15px 20px 14px;
+  border-radius:0;
+  border:none;
+  border-bottom:3px solid transparent;
   background:transparent;
   color:#475467;
-  font-size:13px;
+  font-size:14px;
   font-weight:800;
   cursor:pointer;
   box-shadow:none;
+  white-space:nowrap;
 }
 
 .navBtn.active{
-  background:linear-gradient(135deg,#111827,#344054);
-  color:#fff;
-  border-color:transparent;
-  box-shadow:0 12px 24px rgba(17,24,39,0.14);
+  background:transparent;
+  color:#03c75a;
+  border-bottom-color:#03c75a;
+  box-shadow:none;
 }
 
 .hospitalTabs{
   display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-bottom:14px;
+  flex-wrap:nowrap;
+  gap:6px;
+  margin:0 0 14px;
+  padding:8px 14px;
+  background:#fff;
+  border:1px solid #e5e7eb;
+  border-radius:14px;
+  overflow-x:auto;
 }
 
 .hospitalTab{
-  min-width:120px;
-  padding:9px 14px;
-  border-radius:999px;
-  border:1px solid #d9e0ea;
-  background:rgba(255,255,255,0.96);
+  min-width:auto;
+  padding:10px 14px;
+  border-radius:10px;
+  border:1px solid #edf0f3;
+  background:#f9fafb;
   color:#475467;
   font-size:12px;
   font-weight:800;
@@ -315,16 +324,16 @@ header{
 }
 
 .hospitalTab.active{
-  background:linear-gradient(135deg,#111827,#344054);
-  color:#fff;
-  border-color:transparent;
-  box-shadow:0 12px 20px rgba(17,24,39,0.12);
+  background:#eefaf3;
+  color:#03c75a;
+  border-color:#cdeed9;
+  box-shadow:none;
 }
 
 /* LAYOUT */
 .pageSection{
   display:none;
-  padding:16px;
+  padding:18px 20px 28px;
 }
 
 .pageSection.active{
@@ -333,8 +342,56 @@ header{
 
 .pageGrid{
   display:flex;
-  gap:20px;
+  gap:18px;
   align-items:flex-start;
+}
+
+.appContainer{
+  max-width:1440px;
+  margin:0 auto;
+}
+
+.pageHero{
+  background:#ffffff;
+  border:1px solid #e5e7eb;
+  border-radius:18px;
+  padding:20px 22px;
+  margin-bottom:14px;
+}
+
+.pageHeroTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:20px;
+}
+
+.pageHeroTitle{
+  margin:0;
+  font-size:28px;
+  font-weight:900;
+  letter-spacing:-0.5px;
+  color:#111827;
+}
+
+.pageHeroDesc{
+  margin:8px 0 0;
+  font-size:13px;
+  line-height:1.6;
+  color:#667085;
+}
+
+.pageHeroMeta{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.pageHeroMeta .badge{
+  background:#f9fafb;
+  border-color:#eaecf0;
+  color:#475467;
 }
 
 .left{ flex:3.4; min-width:0; }
@@ -346,26 +403,17 @@ header{
 #deliveryPage .pageGrid .right{ flex:0.72; min-width:170px; }
 
 .box{
-  background:var(--card);
-  backdrop-filter:blur(10px);
+  background:#ffffff;
   padding:18px;
   margin-bottom:16px;
-  border-radius:24px;
-  box-shadow:var(--shadow-soft);
-  border:1px solid #dde3ec;
+  border-radius:16px;
+  box-shadow:none;
+  border:1px solid #e5e7eb;
   position:relative;
   overflow:hidden;
 }
 
-.box::before{
-  content:"";
-  position:absolute;
-  inset:0 auto auto 0;
-  width:220px;
-  height:220px;
-  background:radial-gradient(circle, rgba(15,23,42,0.035), transparent 72%);
-  pointer-events:none;
-}
+.box::before{ display:none; }
 
 .box h3{
   margin:0 0 10px 0;
@@ -595,20 +643,27 @@ td input, td select{
   }
   .right{
     min-width:0;
+    width:100%;
   }
   .headerInner{
-    flex-direction:column;
-    gap:10px;
+    padding:14px 16px 12px;
+    min-height:86px;
+  }
+  .logoWrap{
+    padding-left:64px;
   }
   #clockBox, .logoutBtn{
     position:static;
     transform:none;
   }
   .topNav{
-    justify-content:stretch;
+    padding:0 12px;
   }
   .navBtn{
-    flex:1 1 100%;
+    flex:0 0 auto;
+  }
+  .pageHeroTop{
+    flex-direction:column;
   }
 }
 </style>
@@ -658,13 +713,27 @@ td input, td select{
       <button class="navBtn" data-page="deliveryPage" onclick="switchPage('deliveryPage')">납품 관리</button>
     </div>
   </header>
+  <div class="appContainer">
 
   <section id="inventoryPage" class="pageSection active">
+    <div class="pageHero">
+      <div class="pageHeroTop">
+        <div>
+          <h2 class="pageHeroTitle">재고 관리</h2>
+          <p class="pageHeroDesc">실제 운영 페이지처럼 현재 재고를 입력하고, 조회 조건에 맞춰 목록을 확인하는 메인 화면입니다.</p>
+        </div>
+        <div class="pageHeroMeta">
+          <span class="badge">실시간 재고 입력</span>
+          <span class="badge">거래처별 조회</span>
+          <span class="badge">유효기간 관리</span>
+        </div>
+      </div>
+    </div>
     <div class="hospitalTabs" id="inventoryHospitalTabs"></div>
     <div class="pageGrid">
       <div class="left">
         <div class="box">
-          <h3>📦 재고 등록</h3>
+          <h3>재고 등록</h3>
           <p class="subTitle">재고는 거래처별 / 유효기간별로 개별 등록됩니다. 현재 월 기준 목록은 아래 재고 목록에서 확인할 수 있습니다.</p>
 
           <div class="row">
@@ -693,7 +762,7 @@ td input, td select{
         </div>
 
         <div class="box">
-          <h3>📋 재고 목록</h3>
+          <h3>재고 목록</h3>
           <p class="subTitle">조회용 연/월 필터입니다. 등록 날짜 입력과 별도입니다.</p>
 
           <div class="filterRow">
@@ -744,7 +813,7 @@ td input, td select{
 
       <div class="right">
         <div class="box">
-          <h3>📌 재고 관리 안내</h3>
+          <h3>운영 안내</h3>
           <p class="subTitle">현재 메인 페이지는 재고 관리 전용으로 두고, 보상/미납/유효기간 임박 관리와 납품 관리 기능은 각각 상단 메뉴로 분리했습니다.</p>
           <div class="infoBar">
             <span class="badge">1번 메뉴: 재고 관리</span>
@@ -757,12 +826,25 @@ td input, td select{
   </section>
 
   <section id="compensationPage" class="pageSection">
+    <div class="pageHero">
+      <div class="pageHeroTop">
+        <div>
+          <h2 class="pageHeroTitle">보상 · 미납 시약 관리</h2>
+          <p class="pageHeroDesc">선납 내역과 보상/미납 현황을 한 화면에서 정리하는 운영 페이지입니다. 거래처 단위로 바로 확인할 수 있게 구성했습니다.</p>
+        </div>
+        <div class="pageHeroMeta">
+          <span class="badge">선납 목록</span>
+          <span class="badge">미납 현황</span>
+          <span class="badge">임박 색상 표시</span>
+        </div>
+      </div>
+    </div>
     <div class="hospitalTabs" id="compensationHospitalTabs"></div>
     <div class="pageGrid compensationGrid">
       <div class="left">
         <div class="box">
           <div class="panelTitle">
-            <h3 style="margin:0;">💳 날짜별 선납 목록</h3>
+            <h3 style="margin:0;">날짜별 선납 목록</h3>
             <span class="panelCount" id="prepaidCount">0건</span>
           </div>
 
@@ -794,7 +876,7 @@ td input, td select{
 
         <div class="box">
           <div class="panelTitle">
-            <h3 style="margin:0;">⚠ 보상 / 미납 시약 관리</h3>
+            <h3 style="margin:0;">보상 / 미납 시약 관리</h3>
             <span class="panelCount" id="backlogCount">0건</span>
           </div>
           <p class="subTitle">거래처별로 보상 또는 미납 상태를 관리하고, 유효기간 임박 / 만료는 자동으로 색상 표시됩니다.</p>
@@ -841,7 +923,7 @@ td input, td select{
 
       <div class="right">
         <div class="box">
-          <h3>🧭 상태 색상 기준</h3>
+          <h3>상태 기준</h3>
           <p class="subTitle">보상 / 미납 목록에서 유효기간을 기준으로 자동 강조합니다.</p>
           <div class="infoBar">
             <span class="badge">정상: 기본색</span>
@@ -854,12 +936,25 @@ td input, td select{
   </section>
 
   <section id="deliveryPage" class="pageSection">
+    <div class="pageHero">
+      <div class="pageHeroTop">
+        <div>
+          <h2 class="pageHeroTitle">납품 관리</h2>
+          <p class="pageHeroDesc">월별 납품, 월초발주, 중간발주를 실제 웹페이지처럼 분리해서 보되 연간 납품표에서는 한눈에 합산해 볼 수 있게 구성한 화면입니다.</p>
+        </div>
+        <div class="pageHeroMeta">
+          <span class="badge">연간 납품표</span>
+          <span class="badge">월초/중간 발주</span>
+          <span class="badge">거래처별 보기</span>
+        </div>
+      </div>
+    </div>
     <div class="hospitalTabs" id="deliveryHospitalTabs"></div>
     <div class="pageGrid deliveryGrid">
       <div class="left">
         <div class="box">
           <div class="panelTitle">
-            <h3 style="margin:0;">🚚 납품 내역 등록</h3>
+            <h3 style="margin:0;">납품 내역 등록</h3>
             <span class="panelCount" id="deliveryCount">0건</span>
           </div>
           <p class="subTitle">거래처 / 연도 / 월 / 시약명 기준으로 납품 내역을 누적 등록합니다.</p>
@@ -882,7 +977,7 @@ td input, td select{
         </div>
 
         <div class="box">
-          <h3>📊 거래처별 연간 납품표</h3>
+          <h3>거래처별 연간 납품표</h3>
           <p class="subTitle">오른쪽으로 1~12월, 아래로 시약명 순으로 정리됩니다.</p>
 
           <div class="filterRow">
@@ -906,7 +1001,7 @@ td input, td select{
 
         <div class="box">
           <div class="panelTitle">
-            <h3 style="margin:0;">🗂 납품 등록 상세 목록</h3>
+            <h3 style="margin:0;">납품 등록 상세 목록</h3>
             <span class="panelCount" id="deliveryDetailCount">0건</span>
           </div>
           <div class="tableWrap">
@@ -929,7 +1024,7 @@ td input, td select{
 
         <div class="box">
           <div class="panelTitle">
-            <h3 style="margin:0;">🗂 월초발주 목록</h3>
+            <h3 style="margin:0;">월초발주 목록</h3>
             <span class="panelCount" id="monthStartOrderCount">0건</span>
           </div>
           <p class="subTitle">기존 기능은 유지했습니다. 연/월/거래처를 고정한 뒤 품목을 계속 입력합니다.</p>
@@ -971,7 +1066,7 @@ td input, td select{
 
         <div class="box">
           <div class="panelTitle">
-            <h3 style="margin:0;">🗂 중간발주 목록</h3>
+            <h3 style="margin:0;">중간발주 목록</h3>
             <span class="panelCount" id="midOrderCount">0건</span>
           </div>
           <p class="subTitle">기존 기능은 유지했습니다. 연/월/거래처를 먼저 고정하고 누적 정리합니다.</p>
@@ -1014,12 +1109,13 @@ td input, td select{
 
       <div class="right">
         <div class="box">
-          <h3>📎 납품 관리 안내</h3>
+          <h3>페이지 안내</h3>
           <p class="subTitle">거래처/연도 필터로 납품을 월별 표 형태로 볼 수 있게 구성했습니다. 위 등록 상세 목록은 삭제/수정 관리용, 아래 표는 월별 보기용입니다.</p>
         </div>
       </div>
     </div>
   </section>
+  </div>
 </div>
 
 <datalist id="reagentMasterList"></datalist>
